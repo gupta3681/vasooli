@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from "react";
 import {
   Box,
   Flex,
@@ -8,11 +8,14 @@ import {
   Stack,
   useColorModeValue,
   Divider,
-} from '@chakra-ui/react';
+  Input,
+} from "@chakra-ui/react";
+import { collection, query, where, getDocs } from "firebase/firestore";
+import { db } from "../auth/firebase";
 
 const UserPage = () => {
-  const bgColor = useColorModeValue('gray.50', 'gray.700');
-  const borderColor = useColorModeValue('gray.200', 'gray.600');
+  const bgColor = useColorModeValue("gray.50", "gray.700");
+  const borderColor = useColorModeValue("gray.200", "gray.600");
 
   const TransactionItem = ({ id }) => {
     return (
@@ -42,6 +45,45 @@ const UserPage = () => {
     );
   };
 
+  const SearchUser = () => {
+    const [email, setEmail] = useState("");
+    const [user, setUser] = useState(null);
+    const [loading, setLoading] = useState(false);
+
+    const handleSearch = async () => {
+      setLoading(true);
+      const usersRef = collection(db, "users"); // Adjust to your Firebase users collection name
+      const q = query(usersRef, where("email", "==", email));
+      const querySnapshot = await getDocs(q);
+      const userData = querySnapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+      setUser(userData.length > 0 ? userData[0] : null);
+      setLoading(false);
+    };
+
+    return (
+      <Box my={4}>
+        <Input
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          placeholder="Search by email"
+          mb={2}
+        />
+        <Button onClick={handleSearch} isLoading={loading}>
+          Search
+        </Button>
+        {user ? (
+          <Text mt={2}>User Found: {user.email}</Text>
+        ) : (
+          <Text>User Not Found</Text>
+        )}
+        {/* Expand this section to show more user details or add expense functionality */}
+      </Box>
+    );
+  };
+
   return (
     <Box bg={bgColor} minH="100vh" py={12} px={{ base: 2, sm: 12, md: 17 }}>
       <Flex
@@ -60,6 +102,7 @@ const UserPage = () => {
         <Heading size="lg" mb={6} textAlign="center">
           Requests
         </Heading>
+        <SearchUser />
         <Box
           width="full"
           maxW="md"
