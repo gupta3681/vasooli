@@ -74,11 +74,7 @@ const UserPage = () => {
         <Button onClick={handleSearch} isLoading={loading}>
           Search
         </Button>
-        {user ? (
-          <Text mt={2}>User Found: {user.email}</Text>
-        ) : (
-          <Text>User Not Found</Text>
-        )}
+        {user && <Text mt={2}>User Found: {user.email}</Text>}
         {/* Expand this section to show more user details or add expense functionality */}
       </Box>
     );
