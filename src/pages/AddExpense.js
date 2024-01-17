@@ -14,12 +14,14 @@ import { db } from '../auth/firebase';
 import { collection, addDoc, query, where, getDocs } from 'firebase/firestore';
 import { auth } from '../auth/firebase';
 import { useNavigate } from 'react-router-dom';
+import { doc, getDoc, updateDoc } from 'firebase/firestore';
 
 const AddExpense= ({ onExpenseAdded }) => {
   const [amount, setAmount] = useState('');
   const [email, setEmail] = useState('');
   const [description, setDescription] = useState('');
   const toast = useToast();
+
 
   const handleAddExpense = async () => {
     if (!auth.currentUser) {
@@ -64,14 +66,32 @@ const AddExpense= ({ onExpenseAdded }) => {
       
 
       const recipientUid = querySnapshot.docs[0].id;
+      const recipientRef = doc(db, 'users', recipientUid);
+      const adderRef = doc(db, 'users', adderUid);
 
-      // Add a new document in the "expenses" collection
+      // Retrieve the current balances
+      const recipientDoc = await getDoc(recipientRef);
+      const adderDoc = await getDoc(adderRef);
+
+      const recipientBalance = recipientDoc.data().balance || 0;
+      const adderBalance = adderDoc.data().balance || 0;
+      const expenseAmount = parseFloat(amount);
+
+      // Calculate new balances
+      const newRecipientBalance = recipientBalance - expenseAmount;
+      const newAdderBalance = adderBalance + expenseAmount;
+
+      // Update balances in Firestore
+      await updateDoc(recipientRef, { balance: newRecipientBalance });
+      await updateDoc(adderRef, { balance: newAdderBalance });
+
+      // Add the expense document
       await addDoc(collection(db, 'expenses'), {
-        adderUid,
-        recipientUid,
-        amount: parseFloat(amount),
-        description,
-        createdAt: new Date(),
+          adderUid,
+          recipientUid,
+          amount: expenseAmount,
+          description,
+          createdAt: new Date(),
       });
 
       toast({
