@@ -5,79 +5,31 @@ import {
   Heading,
   Button,
   Text,
-  Stack,
   useColorModeValue,
   Divider,
-  Input,
 } from "@chakra-ui/react";
-import { collection, query, where, getDocs } from "firebase/firestore";
-import { db } from "../auth/firebase";
+import { signOut } from "firebase/auth"; // Import the signOut function
+import { auth } from "../auth/firebase"; // Adjust the path as necessary
+import { useNavigate } from "react-router-dom"; // For navigation after logout
+import AddExpenseForm from "./AddExpense";
 
 const UserPage = () => {
   const bgColor = useColorModeValue("gray.50", "gray.700");
   const borderColor = useColorModeValue("gray.200", "gray.600");
+  const navigate = useNavigate();
 
-  const TransactionItem = ({ id }) => {
-    return (
-      <Flex
-        p={4}
-        justifyContent="space-between"
-        alignItems="center"
-        borderRadius="md"
-        borderWidth="1px"
-        borderColor={borderColor}
-      >
-        <Box>
-          <Text>Transaction #{id}</Text>
-          <Text fontSize="sm" color="gray.500">
-            Details about the transaction...
-          </Text>
-        </Box>
-        <Flex>
-          <Button size="sm" colorScheme="blue" mr={2}>
-            Acknowledge
-          </Button>
-          <Button size="sm" colorScheme="red">
-            Deny
-          </Button>
-        </Flex>
-      </Flex>
-    );
+  const onExpenseAdded = () => {
+    console.log("Expense added");
   };
 
-  const SearchUser = () => {
-    const [email, setEmail] = useState("");
-    const [user, setUser] = useState(null);
-    const [loading, setLoading] = useState(false);
-
-    const handleSearch = async () => {
-      setLoading(true);
-      const usersRef = collection(db, "users"); // Adjust to your Firebase users collection name
-      const q = query(usersRef, where("email", "==", email));
-      const querySnapshot = await getDocs(q);
-      const userData = querySnapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      }));
-      setUser(userData.length > 0 ? userData[0] : null);
-      setLoading(false);
-    };
-
-    return (
-      <Box my={4}>
-        <Input
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          placeholder="Search by email"
-          mb={2}
-        />
-        <Button onClick={handleSearch} isLoading={loading}>
-          Search
-        </Button>
-        {user && <Text mt={2}>User Found: {user.email}</Text>}
-        {/* Expand this section to show more user details or add expense functionality */}
-      </Box>
-    );
+  const handleLogout = async () => {
+    try {
+      await signOut(auth);
+      navigate('/login'); // Redirect to the login page after logout
+    } catch (error) {
+      console.error("Error signing out: ", error);
+      // Handle logout errors here
+    }
   };
 
   return (
@@ -96,34 +48,23 @@ const UserPage = () => {
         borderColor={borderColor}
       >
         <Heading size="lg" mb={6} textAlign="center">
-          Requests
+          My Balance Sheet
         </Heading>
-        <SearchUser />
-        <Box
-          width="full"
-          maxW="md"
-          mb={6}
-          height="320px" // Set a fixed height
-          overflowY="auto" // Enable vertical scrolling
-          borderWidth="1px"
-          borderColor={borderColor}
-          borderRadius="md"
-        >
-          <Stack spacing={4} p={2}>
-            {/* List of Transactions */}
-            {[...Array(10).keys()].map(
-              (
-                id // Sample array to simulate more transactions
-              ) => (
-                <TransactionItem key={id} id={id} />
-              )
-            )}
-          </Stack>
-        </Box>
+        
+        <Text mb={2}>User Information about what he owes</Text>
+  
         <Divider my={6} />
+        <AddExpenseForm onExpenseAdded={onExpenseAdded} />
         <Box width="full" maxW="md">
           <Text mb={2}>More user details...</Text>
         </Box>
+        <Button 
+          colorScheme="red" 
+          mt={4} 
+          onClick={handleLogout}
+        >
+          Log Out
+        </Button>
       </Flex>
     </Box>
   );

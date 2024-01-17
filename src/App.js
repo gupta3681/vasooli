@@ -13,30 +13,34 @@ import HomePage from "./pages/HomePage";
 import LoginPage from "./pages/LoginPage";
 import SignUpPage from "./pages/SignUpPage";
 import UserPage from "./pages/UserPage";
+import { getDoc } from "firebase/firestore";
 // Import other pages here...
 
 function App() {
   const [currentUser, setCurrentUser] = useState(null);
-
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       setCurrentUser(user);
       if (user) {
-        // User is signed in, create or update their document in Firestore
         const userRef = doc(db, "users", user.uid);
-        await setDoc(
-          userRef,
-          {
+        const docSnap = await getDoc(userRef);
+  
+        if (!docSnap.exists()) {
+          // The user is new, create their document with initial balance
+          await setDoc(userRef, {
             email: user.email,
-            // Add any other user details you want to store
-          },
-          { merge: true }
-        );
+            balance: 0,
+            // Add any other initial user details
+          });
+        } else {
+          console.log('User already exists.')
+        }
       }
     });
-
+  
     return () => unsubscribe();
   }, []);
+  
 
   // A component to handle protected routes
   const ProtectedRoute = ({ children }) => {

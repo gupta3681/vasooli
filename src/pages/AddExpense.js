@@ -10,19 +10,18 @@ import {
   VStack,
   useToast,
 } from '@chakra-ui/react';
-import { db } from '../auth/firebase'; // Configure your Firebase instance
-import { collection, addDoc } from 'firebase/firestore';
-import { useForm, Controller } from 'react-hook-form';
-import { auth } from '../auth/firebase'; // Configure your Firebase instance
+import { db } from '../auth/firebase';
+import { collection, addDoc, query, where, getDocs } from 'firebase/firestore';
+import { auth } from '../auth/firebase';
 import { useNavigate } from 'react-router-dom';
-const AddExpensePage = () => {
+
+const AddExpense= ({ onExpenseAdded }) => {
   const [amount, setAmount] = useState('');
   const [email, setEmail] = useState('');
   const [description, setDescription] = useState('');
   const toast = useToast();
 
-  const handleAddExpense = async data => {
-    // Ensure there is a user logged in before trying to add an expense
+  const handleAddExpense = async () => {
     if (!auth.currentUser) {
       toast({
         title: 'Error.',
@@ -34,17 +33,47 @@ const AddExpensePage = () => {
       return;
     }
 
-    const uid = auth.currentUser.uid; // Get the UID of the logged-in user
+    const adderUid = auth.currentUser.uid;
 
     try {
-      // Add a new document with a generated id in the "expenses" collection
+      // Query the users collection to find the user with the given email
+      const usersRef = collection(db, 'users');
+      const q = query(usersRef, where('email', '==', email));
+      const querySnapshot = await getDocs(q);
+
+      if (querySnapshot.empty) {
+        toast({
+          title: 'Error.',
+          description: 'Recipient not found.',
+          status: 'error',
+          duration: 5000,
+          isClosable: true,
+        });
+        return;
+      } 
+      else if (querySnapshot.docs.length > 1) {
+        toast({
+          title: 'Error.',
+          description: 'Multiple users found.',
+          status: 'error',
+          duration: 5000,
+          isClosable: true,  
+        });
+        return;
+      }
+      
+
+      const recipientUid = querySnapshot.docs[0].id;
+
+      // Add a new document in the "expenses" collection
       await addDoc(collection(db, 'expenses'), {
-        uid, // Link the expense to the user's UID
-        amount: parseFloat(data.amount),
-        email: data.email, // recipient email
-        description: data.description,
-        createdAt: new Date(), // Store the date when the expense was added
+        adderUid,
+        recipientUid,
+        amount: parseFloat(amount),
+        description,
+        createdAt: new Date(),
       });
+
       toast({
         title: 'Expense added.',
         description: "We've added the expense for you.",
@@ -52,6 +81,11 @@ const AddExpensePage = () => {
         duration: 5000,
         isClosable: true,
       });
+
+      // Optional callback for when an expense is successfully added
+      if (onExpenseAdded) {
+        onExpenseAdded();
+      }
     } catch (error) {
       toast({
         title: 'Error.',
@@ -62,7 +96,6 @@ const AddExpensePage = () => {
       });
     }
   };
-
   return (
     <VStack spacing={4} align="stretch" m={4}>
       <FormControl isRequired>
@@ -71,7 +104,7 @@ const AddExpensePage = () => {
           <NumberInputField
             id="amount"
             value={amount}
-            onChange={e => setAmount(e.target.value)}
+            onChange={(e) => setAmount(e.target.value)}
           />
         </NumberInput>
       </FormControl>
@@ -81,7 +114,7 @@ const AddExpensePage = () => {
           id="email"
           type="email"
           value={email}
-          onChange={e => setEmail(e.target.value)}
+          onChange={(e) => setEmail(e.target.value)}
         />
       </FormControl>
       <FormControl isRequired>
@@ -89,7 +122,7 @@ const AddExpensePage = () => {
         <Input
           id="description"
           value={description}
-          onChange={e => setDescription(e.target.value)}
+          onChange={(e) => setDescription(e.target.value)}
         />
       </FormControl>
       <Button onClick={handleAddExpense} colorScheme="blue" isFullWidth>
@@ -99,4 +132,4 @@ const AddExpensePage = () => {
   );
 };
 
-export default AddExpensePage;
+export default AddExpense;
