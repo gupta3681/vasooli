@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Box,
   Flex,
@@ -12,12 +12,30 @@ import { signOut } from "firebase/auth"; // Import the signOut function
 import { auth } from "../auth/firebase"; // Adjust the path as necessary
 import { useNavigate } from "react-router-dom"; // For navigation after logout
 import AddExpenseForm from "./AddExpense";
+import { doc, getDoc } from "firebase/firestore";
+import { db } from "../auth/firebase";
 
 const UserPage = () => {
   const bgColor = useColorModeValue("gray.50", "gray.700");
   const borderColor = useColorModeValue("gray.200", "gray.600");
   const navigate = useNavigate();
+  const [userBalance, setUserBalance] = useState(null);
 
+  useEffect(() => {
+    const fetchUserBalance = async () => {
+      // Fetch the user's balance from Firestore
+      if (auth.currentUser) {
+        const userRef = doc(db, "users", auth.currentUser.uid);
+        const docSnap = await getDoc(userRef);
+        if (docSnap.exists()) {
+          setUserBalance(docSnap.data().balance);
+          console.log(docSnap.data().balance, "docSnap.data().balance");
+        }
+      }
+    }
+    fetchUserBalance();
+    console.log(userBalance, "userBalance");
+  }, []);
   const onExpenseAdded = () => {
     console.log("Expense added");
   };
@@ -52,6 +70,7 @@ const UserPage = () => {
         </Heading>
         
         <Text mb={2}>User Information about what he owes</Text>
+        <Text mb={2}>Balance:{userBalance}</Text>
   
         <Divider my={6} />
         <AddExpenseForm onExpenseAdded={onExpenseAdded} />

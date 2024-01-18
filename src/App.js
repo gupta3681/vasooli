@@ -18,9 +18,12 @@ import { getDoc } from "firebase/firestore";
 
 function App() {
   const [currentUser, setCurrentUser] = useState(null);
+  const [loading, setLoading] = useState(true); // Loading state
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       setCurrentUser(user);
+      setLoading(false);
+
       if (user) {
         const userRef = doc(db, "users", user.uid);
         const docSnap = await getDoc(userRef);
@@ -44,12 +47,13 @@ function App() {
 
   // A component to handle protected routes
   const ProtectedRoute = ({ children }) => {
-    if (!currentUser) {
+    if (!currentUser && !loading) {
       // User not logged in, redirect to login page
       return <Navigate to="/login" replace />;
     }
     return children; // User is logged in, render the protected component
   };
+
 
   return (
     <ChakraProvider theme={theme}>
