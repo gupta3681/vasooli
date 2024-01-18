@@ -6,6 +6,12 @@ import {
   VStack,
   Divider,
   useColorModeValue,
+  Table,
+  Thead,
+  Tbody,
+  Tr,
+  Th,
+  Td,
 } from '@chakra-ui/react';
 import { collection, query, where, getDocs, doc } from 'firebase/firestore'; // Import 'doc' for document references
 import { db, auth } from '../auth/firebase'; // Import 'auth' from Firebase
@@ -43,7 +49,6 @@ const UserExpenses = () => {
       fetchUserExpenses();
     }
   }, []);
-
   return (
     <Box
       bg={bgColor}
@@ -51,31 +56,41 @@ const UserExpenses = () => {
       borderRadius="lg"
       shadow="lg"
       borderWidth="1px"
-      maxH="300px" // Set a maximum height for scrolling
+      borderColor={borderColor}
+      w="100%"
+      maxW="2xl"
+      maxH="300px" // Set a maximum height for the table container
       overflowY="auto" // Enable vertical scrolling
     >
-      <Heading size="md" mb={2} textAlign="center">
+      <Heading size="md" mb={4} textAlign="center">
         Potential Expenses
       </Heading>
-      <VStack align="start" spacing={2}>
-        {expenses.map((expense, index) => (
-          <Box key={index}>
-            <Text>
-              Amount: ${expense.amount}
-            </Text>
-            <Text>
-              Description: {expense.description}
-            </Text>
-            <Text>
-              Date: {expense.createdAt.toDateString()}
-            </Text>
-            <Text>
-              Expense Situation: {expense.expenseSituation}
-            </Text>
-            <Divider my={2} />
-          </Box>
-        ))}
-      </VStack>
+      <Box
+        w="100%"
+        h="100%"
+        overflowY="auto" // Set the Box containing the table to be scrollable
+      >
+        <Table variant="simple">
+          <Thead>
+            <Tr>
+              <Th>Amount</Th>
+              <Th>Description</Th>
+              <Th>Date</Th>
+              <Th>Situation</Th>
+            </Tr>
+          </Thead>
+          <Tbody>
+            {expenses.map((expense, index) => (
+              <Tr key={index}>
+                <Td>${expense.amount}</Td>
+                <Td>{expense.description}</Td>
+                <Td>{expense.createdAt.toDateString()}</Td>
+                <Td>{expense.expenseSituation}</Td>
+              </Tr>
+            ))}
+          </Tbody>
+        </Table>
+      </Box>
     </Box>
   );
 };
