@@ -14,30 +14,31 @@ import { useNavigate } from "react-router-dom"; // For navigation after logout
 import AddExpenseForm from "./AddExpense";
 import { doc, getDoc } from "firebase/firestore";
 import { db } from "../auth/firebase";
+import UserExpenses from "../components/UserExpenses";
 
 const UserPage = () => {
   const bgColor = useColorModeValue("gray.50", "gray.700");
   const borderColor = useColorModeValue("gray.200", "gray.600");
   const navigate = useNavigate();
   const [userBalance, setUserBalance] = useState(null);
-
-  useEffect(() => {
-    const fetchUserBalance = async () => {
-      // Fetch the user's balance from Firestore
-      if (auth.currentUser) {
-        const userRef = doc(db, "users", auth.currentUser.uid);
-        const docSnap = await getDoc(userRef);
-        if (docSnap.exists()) {
-          setUserBalance(docSnap.data().balance);
-          console.log(docSnap.data().balance, "docSnap.data().balance");
-        }
+  const fetchUserBalance = async () => {
+    // Fetch the user's balance from Firestore
+    if (auth.currentUser) {
+      const userRef = doc(db, "users", auth.currentUser.uid);
+      const docSnap = await getDoc(userRef);
+      if (docSnap.exists()) {
+        setUserBalance(docSnap.data().balance);
+        console.log(docSnap.data().balance, "docSnap.data().balance");
       }
     }
+  }
+
+  useEffect(() => {
     fetchUserBalance();
     console.log(userBalance, "userBalance");
   }, []);
   const onExpenseAdded = () => {
-    console.log("Expense added");
+    fetchUserBalance();
   };
 
   const handleLogout = async () => {
@@ -52,6 +53,7 @@ const UserPage = () => {
 
   return (
     <Box bg={bgColor} minH="100vh" py={12} px={{ base: 2, sm: 12, md: 17 }}>
+      
       <Flex
         direction="column"
         alignItems="center"
@@ -68,15 +70,15 @@ const UserPage = () => {
         <Heading size="lg" mb={6} textAlign="center">
           My Balance Sheet
         </Heading>
-        
+      
         <Text mb={2}>User Information about what he owes</Text>
         <Text mb={2}>Balance:{userBalance}</Text>
   
         <Divider my={6} />
+        <UserExpenses />
+        <Divider my={6} />        
         <AddExpenseForm onExpenseAdded={onExpenseAdded} />
-        <Box width="full" maxW="md">
-          <Text mb={2}>More user details...</Text>
-        </Box>
+        <Divider my={6} />
         <Button 
           colorScheme="red" 
           mt={4} 
@@ -85,6 +87,8 @@ const UserPage = () => {
           Log Out
         </Button>
       </Flex>
+  
+      
     </Box>
   );
 };
