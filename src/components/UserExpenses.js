@@ -51,7 +51,6 @@ const UserExpenses = () => {
   }, []);
   return (
     <Box
-      bg={bgColor}
       p={4}
       borderRadius="lg"
       shadow="lg"
@@ -63,7 +62,7 @@ const UserExpenses = () => {
       overflowY="auto" // Enable vertical scrolling
     >
       <Heading size="md" mb={4} textAlign="center">
-        Potential Expenses
+        My Expenses
       </Heading>
       <Box
         w="100%"

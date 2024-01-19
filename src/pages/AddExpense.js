@@ -10,6 +10,7 @@ import {
   VStack,
   Select, // Add Select component for the expense situation
   useToast,
+  useColorModeValue,
 } from '@chakra-ui/react';
 import {
   collection,
@@ -32,6 +33,8 @@ const AddExpense = ({ onExpenseAdded }) => {
   const [expenseSituation, setExpenseSituation] = useState('youOweThem'); // Default to 'you owe them'
   const toast = useToast();
   const navigate = useNavigate();
+  const borderColor = useColorModeValue("gray.200", "gray.600");
+
 
   const handleAddExpense = async () => {
     try {
@@ -141,7 +144,14 @@ const AddExpense = ({ onExpenseAdded }) => {
   };
 
   return (
-    <VStack spacing={4} align="stretch" m={4}>
+    <Box
+    borderRadius="lg"
+      shadow="lg"
+      borderWidth="1px"
+      borderColor={borderColor}
+     minWidth={{ base: '100%', sm: '100%', md: '100%' }}
+    >
+      <VStack spacing={4} align="stretch" m={4}>
       <FormControl isRequired>
         <FormLabel htmlFor="amount">Amount</FormLabel>
         <NumberInput>
@@ -184,6 +194,11 @@ const AddExpense = ({ onExpenseAdded }) => {
         Add Expense
       </Button>
     </VStack>
+   
+
+    </Box>
+
+    
   );
 };
 

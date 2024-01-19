@@ -25,6 +25,8 @@ const UserPage = () => {
   const navigate = useNavigate();
   const [userBalance, setUserBalance] = useState(null);
   const [showForm, setShowForm] = useState(false);
+  const [showExpenses, setShowExpenses] = useState(false);
+
 
   const fetchUserBalance = async () => {
     if (auth.currentUser) {
@@ -54,6 +56,7 @@ const UserPage = () => {
   };
 
   const toggleFormVisibility = () => setShowForm(!showForm);
+  const toggleExpensesVisibility = () => setShowExpenses(!showExpenses);
 
   return (
     <Box bg={bgColor} minH="100vh" py={12} px={{ base: 2, sm: 12, md: 17 }}>
@@ -77,9 +80,8 @@ const UserPage = () => {
         <Text mb={2}>Balance: {userBalance}</Text>
   
         <Divider my={6} />
-        <UserExpenses />
-        <Divider my={6} />
-        
+
+        <Flex direction='row' justifyContent='space-around'w='full'>
         <IconButton
           aria-label="Add expense"
           icon={<PlusSquareIcon />}
@@ -89,12 +91,29 @@ const UserPage = () => {
           onClick={toggleFormVisibility}
           mb={4}
         />
+        <IconButton
+          aria-label="Show expenses"
+          icon={<PlusSquareIcon />}
+          size="lg"
+          colorScheme="teal"
+          variant="outline"
+          onClick={toggleExpensesVisibility}
+          mb={4}
+        />
+        </Flex>
         
-        <Collapse in={showForm} animateOpacity>
+       
+       <Collapse in={showExpenses} animateOpacity>
+          <UserExpenses />
+        </Collapse>
+
+         <Collapse in={showForm} animateOpacity>
           <AddExpenseForm onExpenseAdded={onExpenseAdded} />
         </Collapse>
-        
+    
         <Divider my={6} />
+  
+
         <Button colorScheme="red" mt={4} onClick={handleLogout}>
           Log Out
         </Button>
