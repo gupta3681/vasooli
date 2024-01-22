@@ -61,9 +61,6 @@ const UserExpenses = () => {
       maxH="300px" // Set a maximum height for the table container
       overflowY="auto" // Enable vertical scrolling
     >
-      <Heading size="md" mb={4} textAlign="center">
-        My Expenses
-      </Heading>
       <Box
         w="100%"
         h="100%"
@@ -75,7 +72,6 @@ const UserExpenses = () => {
               <Th>Amount</Th>
               <Th>Description</Th>
               <Th>Date</Th>
-              <Th>Situation</Th>
             </Tr>
           </Thead>
           <Tbody>
@@ -84,7 +80,6 @@ const UserExpenses = () => {
                 <Td>${expense.amount}</Td>
                 <Td>{expense.description}</Td>
                 <Td>{expense.createdAt.toDateString()}</Td>
-                <Td>{expense.expenseSituation}</Td>
               </Tr>
             ))}
           </Tbody>

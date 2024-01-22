@@ -9,6 +9,10 @@ import {
   Divider,
   Collapse,
   IconButton,
+  Stat,
+  StatLabel,
+  StatNumber,
+  StatHelpText,
 } from "@chakra-ui/react";
 import { PlusSquareIcon } from "@chakra-ui/icons"; // Using PlusSquareIcon instead
 import { signOut } from "firebase/auth";
@@ -55,8 +59,10 @@ const UserPage = () => {
     }
   };
 
-  const toggleFormVisibility = () => setShowForm(!showForm);
-  const toggleExpensesVisibility = () => setShowExpenses(!showExpenses);
+  const toggleFormVisibility = () => {setShowForm(!showForm)
+  setShowExpenses(false)};
+  const toggleExpensesVisibility = () => {setShowExpenses(!showExpenses)
+  setShowForm(false)};
 
   return (
     <Box bg={bgColor} minH="100vh" py={12} px={{ base: 2, sm: 12, md: 17 }}>
@@ -73,11 +79,12 @@ const UserPage = () => {
         borderWidth="1px"
         borderColor={borderColor}
       >
-        <Heading size="lg" mb={6} textAlign="center">
-          My Balance Sheet
-        </Heading>
-        <Text mb={2}>User Information about what he owes</Text>
-        <Text mb={2}>Balance: {userBalance}</Text>
+        <Stat>
+
+          <StatLabel>You are currently owed</StatLabel>
+          <StatNumber>${userBalance}</StatNumber>
+          <StatHelpText>Feb 12 - Feb 28</StatHelpText>
+        </Stat>
   
         <Divider my={6} />
 

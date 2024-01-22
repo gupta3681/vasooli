@@ -75,8 +75,10 @@ const AddExpense = ({ onExpenseAdded }) => {
         expenseType = 'debtor';
       } else if (expenseSituation === 'theyOweYou') {
         expenseType = 'creditor';
-      } else {
-        throw new Error('Invalid expense situation.');
+      } else if (expenseSituation === 'split1') {
+        expenseType = 'split1';
+      } else if (expenseSituation === 'split2') {
+        expenseType = 'split2';
       }
   
       // Calculate new balances based on the expense type
@@ -84,9 +86,16 @@ const AddExpense = ({ onExpenseAdded }) => {
       if (expenseType === 'debtor') {
         newRecipientBalance = recipientBalance + expenseAmount;
         newAdderBalance = adderBalance - expenseAmount;
-      } else {
+      } else if (expenseType === 'creditor'){
         newRecipientBalance = recipientBalance - expenseAmount;
         newAdderBalance = adderBalance + expenseAmount;
+      } else if (expenseType === 'split1') {
+        newRecipientBalance = recipientBalance - (expenseAmount / 2);
+        newAdderBalance = adderBalance +(expenseAmount / 2);
+      }
+      else if (expenseType === 'split2') {
+        newRecipientBalance = recipientBalance + (expenseAmount / 2);
+        newAdderBalance = adderBalance - (expenseAmount / 2);
       }
   
       // Update balances in Firestore
@@ -104,6 +113,18 @@ const AddExpense = ({ onExpenseAdded }) => {
         createdAt: new Date(),
         expenseSituation:expenseType,
       });
+
+      let expenseSituationForRecipient;
+      if (expenseType === 'debtor') {
+        expenseSituationForRecipient = 'creditor';
+      } else if (expenseType === 'creditor') {
+        expenseSituationForRecipient = 'debtor';
+      } else if (expenseType === 'split1') {
+        expenseSituationForRecipient = 'split2';
+      } else if (expenseType === 'split2') {
+        expenseSituationForRecipient = 'split1';
+      }
+
       
       // Add the expense document for recipient with the opposite type
       await addDoc(collection(db, 'users', recipientUid, 'expenses'), {
@@ -112,7 +133,7 @@ const AddExpense = ({ onExpenseAdded }) => {
         amount: expenseAmount,
         description,
         createdAt: new Date(),
-        expenseSituation: expenseType === 'Debtor' ? 'Creditor' : 'Debtor',
+        expenseSituation:expenseSituationForRecipient
       });
   
       toast({
@@ -145,11 +166,12 @@ const AddExpense = ({ onExpenseAdded }) => {
 
   return (
     <Box
-    borderRadius="lg"
+      borderRadius="lg"
       shadow="lg"
       borderWidth="1px"
       borderColor={borderColor}
-     minWidth={{ base: '100%', sm: '100%', md: '100%' }}
+      minWidth={{ base: '100%', sm: '100%', md: '100%' }}
+      maxWidth={{ base: '100%', sm: '100%', md: '800px' }} // Adjust this line
     >
       <VStack spacing={4} align="stretch" m={4}>
       <FormControl isRequired>
@@ -186,8 +208,10 @@ const AddExpense = ({ onExpenseAdded }) => {
           value={expenseSituation}
           onChange={(e) => setExpenseSituation(e.target.value)}
         >
-          <option value="youOweThem">You Owe Them</option>
-          <option value="theyOweYou">They Owe You</option>
+          <option value="youOweThem">You Owe Them Fully </option>
+          <option value="theyOweYou">They Owe You Fully </option>
+          <option value="split1">Split paid by you </option>
+          <option value="split2">Split paid by them </option>
         </Select>
       </FormControl>
       <Button onClick={handleAddExpense} colorScheme="blue" isFullWidth>
