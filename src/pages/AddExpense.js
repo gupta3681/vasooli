@@ -172,6 +172,7 @@ const AddExpense = ({ onExpenseAdded }) => {
       borderColor={borderColor}
       minWidth={{ base: '100%', sm: '100%', md: '100%' }}
       maxWidth={{ base: '100%', sm: '100%', md: '800px' }} // Adjust this line
+
     >
       <VStack spacing={4} align="stretch" m={4}>
       <FormControl isRequired>
@@ -218,11 +219,7 @@ const AddExpense = ({ onExpenseAdded }) => {
         Add Expense
       </Button>
     </VStack>
-   
-
     </Box>
-
-    
   );
 };
 

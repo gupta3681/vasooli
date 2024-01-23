@@ -22,6 +22,8 @@ import AddExpenseForm from "./AddExpense";
 import { doc, getDoc } from "firebase/firestore";
 import { db } from "../auth/firebase";
 import UserExpenses from "../components/UserExpenses";
+import UserExpensesSummary from "../components/UserExpenseSummary";
+import { AddIcon, ViewIcon } from "@chakra-ui/icons";
 
 const UserPage = () => {
   const bgColor = useColorModeValue("gray.50", "gray.700");
@@ -63,7 +65,6 @@ const UserPage = () => {
   setShowExpenses(false)};
   const toggleExpensesVisibility = () => {setShowExpenses(!showExpenses)
   setShowForm(false)};
-
   return (
     <Box bg={bgColor} minH="100vh" py={12} px={{ base: 2, sm: 12, md: 17 }}>
       <Flex
@@ -80,33 +81,35 @@ const UserPage = () => {
         borderColor={borderColor}
       >
         <Stat>
-
           <StatLabel>You are currently owed</StatLabel>
           <StatNumber>${userBalance}</StatNumber>
           <StatHelpText>Feb 12 - Feb 28</StatHelpText>
         </Stat>
   
         <Divider my={6} />
+        <UserExpensesSummary />
+        <Divider my={6} />
 
         <Flex direction='row' justifyContent='space-around'w='full'>
-        <IconButton
-          aria-label="Add expense"
-          icon={<PlusSquareIcon />}
-          size="lg"
-          colorScheme="teal"
-          variant="outline"
-          onClick={toggleFormVisibility}
-          mb={4}
-        />
-        <IconButton
-          aria-label="Show expenses"
-          icon={<PlusSquareIcon />}
-          size="lg"
-          colorScheme="teal"
-          variant="outline"
-          onClick={toggleExpensesVisibility}
-          mb={4}
-        />
+        <Button
+            leftIcon={<AddIcon />}
+            colorScheme="teal"
+            variant="solid"
+            onClick={toggleFormVisibility}
+            mb={4}
+          >
+            Add Expense
+          </Button>
+
+          <Button
+            leftIcon={<ViewIcon />}
+            colorScheme="teal"
+            variant="solid"
+            onClick={toggleExpensesVisibility}
+            mb={4}
+          >
+            Show Expenses
+          </Button>
         </Flex>
         
        
