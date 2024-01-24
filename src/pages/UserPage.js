@@ -81,9 +81,7 @@ const UserPage = () => {
         borderColor={borderColor}
       >
         <Stat>
-          <StatLabel>You are currently owed</StatLabel>
-          <StatNumber>${userBalance}</StatNumber>
-          <StatHelpText>Feb 12 - Feb 28</StatHelpText>
+          <StatNumber>Your total balance is ${userBalance}</StatNumber>
         </Stat>
   
         <Divider my={6} />
