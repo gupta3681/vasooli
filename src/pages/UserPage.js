@@ -61,6 +61,11 @@ const UserPage = () => {
     }
   };
 
+  const emailShortner = (email) => {
+    return email.split("@")[0];
+  }
+
+
   const toggleFormVisibility = () => {setShowForm(!showForm)
   setShowExpenses(false)};
   const toggleExpensesVisibility = () => {setShowExpenses(!showExpenses)
@@ -80,9 +85,9 @@ const UserPage = () => {
         borderWidth="1px"
         borderColor={borderColor}
       >
-        <Stat>
-          <StatNumber>Your total balance is ${userBalance}</StatNumber>
-        </Stat>
+        <Text>
+          Hey there, {auth.currentUser ? emailShortner(auth.currentUser.email) : "friend"}!
+        </Text>
   
         <Divider my={6} />
         <UserExpensesSummary />

@@ -20,6 +20,7 @@ import {
   getDocs,
   doc,
   updateDoc,
+  setDoc,
   getDoc as getFirestoreDoc,
 } from 'firebase/firestore';
 import { auth } from '../auth/firebase';
@@ -43,8 +44,6 @@ const AddExpense = ({ onExpenseAdded }) => {
       }
   
       const adderUid = auth.currentUser.uid;
-  
-      // Query the users collection to find the user with the given email
       const usersRef = collection(db, 'users');
       const q = query(usersRef, where('email', '==', email));
       const querySnapshot = await getDocs(q);
@@ -56,17 +55,27 @@ const AddExpense = ({ onExpenseAdded }) => {
       }
   
       const recipientUid = querySnapshot.docs[0].id;
-      const recipientRef = doc(db, 'users', recipientUid);
-      const adderRef = doc(db, 'users', adderUid);
   
-      // Retrieve the current balances
-      const [recipientDoc, adderDoc] = await Promise.all([
-        getFirestoreDoc(recipientRef),
-        getFirestoreDoc(adderRef),
-      ]);
+      // References to the balances subcollection documents
+      const adderBalanceRef = doc(db, 'users', adderUid, 'balances', recipientUid);
+      const recipientBalanceRef = doc(db, 'users', recipientUid, 'balances', adderUid);
+      const balanceUpdatePromises = [];
+      if (!(await getFirestoreDoc(adderBalanceRef)).exists()) {
+        balanceUpdatePromises.push(setDoc(adderBalanceRef, { balance: 0 }));
+      }
+      if (!(await getFirestoreDoc(recipientBalanceRef)).exists()) {
+        balanceUpdatePromises.push(setDoc(recipientBalanceRef, { balance: 0 }));
+      }
+      await Promise.all(balanceUpdatePromises);
   
-      const recipientBalance = recipientDoc.data()?.balance || 0;
-      const adderBalance = adderDoc.data()?.balance || 0;
+      // Retrieve or initialize the current balances
+      // Retrieve the current balances again, now that they are guaranteed to exist
+    const [adderBalanceDoc, recipientBalanceDoc] = await Promise.all([
+      getFirestoreDoc(adderBalanceRef),
+      getFirestoreDoc(recipientBalanceRef),
+    ]);
+      let adderBalance = adderBalanceDoc.exists() ? adderBalanceDoc.data().balance : 0;
+      let recipientBalance = recipientBalanceDoc.exists() ? recipientBalanceDoc.data().balance : 0;
       const expenseAmount = parseFloat(amount);
   
       // Determine the expense type based on the selected situation
@@ -82,26 +91,24 @@ const AddExpense = ({ onExpenseAdded }) => {
       }
   
       // Calculate new balances based on the expense type
-      let newRecipientBalance, newAdderBalance;
       if (expenseType === 'debtor') {
-        newRecipientBalance = recipientBalance + expenseAmount;
-        newAdderBalance = adderBalance - expenseAmount;
-      } else if (expenseType === 'creditor'){
-        newRecipientBalance = recipientBalance - expenseAmount;
-        newAdderBalance = adderBalance + expenseAmount;
+        recipientBalance += expenseAmount;
+        adderBalance -= expenseAmount;
+      } else if (expenseType === 'creditor') {
+        recipientBalance -= expenseAmount;
+        adderBalance += expenseAmount;
       } else if (expenseType === 'split1') {
-        newRecipientBalance = recipientBalance - (expenseAmount / 2);
-        newAdderBalance = adderBalance +(expenseAmount / 2);
-      }
-      else if (expenseType === 'split2') {
-        newRecipientBalance = recipientBalance + (expenseAmount / 2);
-        newAdderBalance = adderBalance - (expenseAmount / 2);
+        recipientBalance -= (expenseAmount / 2);
+        adderBalance += (expenseAmount / 2);
+      } else if (expenseType === 'split2') {
+        recipientBalance += (expenseAmount / 2);
+        adderBalance -= (expenseAmount / 2);
       }
   
-      // Update balances in Firestore
+      // Update the balance documents in the balances subcollection
       await Promise.all([
-        updateDoc(recipientRef, { balance: newRecipientBalance }),
-        updateDoc(adderRef, { balance: newAdderBalance }),
+        updateDoc(adderBalanceRef, { balance: adderBalance }, { merge: true }),
+        updateDoc(recipientBalanceRef, { balance: recipientBalance }, { merge: true }),
       ]);
   
       // Add the expense document for adder with the selected type
@@ -111,21 +118,17 @@ const AddExpense = ({ onExpenseAdded }) => {
         amount: expenseAmount,
         description,
         createdAt: new Date(),
-        expenseSituation:expenseType,
+        expenseSituation: expenseType,
       });
-
-      let expenseSituationForRecipient;
-      if (expenseType === 'debtor') {
-        expenseSituationForRecipient = 'creditor';
-      } else if (expenseType === 'creditor') {
-        expenseSituationForRecipient = 'debtor';
-      } else if (expenseType === 'split1') {
-        expenseSituationForRecipient = 'split2';
-      } else if (expenseType === 'split2') {
-        expenseSituationForRecipient = 'split1';
-      }
-
-      
+  
+      // Determine the expense situation for the recipient
+      let expenseSituationForRecipient = {
+        debtor: 'creditor',
+        creditor: 'debtor',
+        split1: 'split2',
+        split2: 'split1',
+      }[expenseType];
+  
       // Add the expense document for recipient with the opposite type
       await addDoc(collection(db, 'users', recipientUid, 'expenses'), {
         adderUid,
@@ -133,7 +136,7 @@ const AddExpense = ({ onExpenseAdded }) => {
         amount: expenseAmount,
         description,
         createdAt: new Date(),
-        expenseSituation:expenseSituationForRecipient
+        expenseSituation: expenseSituationForRecipient,
       });
   
       toast({
@@ -163,6 +166,7 @@ const AddExpense = ({ onExpenseAdded }) => {
       });
     }
   };
+  
 
   return (
     <Box
