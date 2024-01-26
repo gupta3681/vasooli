@@ -77,7 +77,7 @@ const UserExpenses = () => {
           <Tbody>
             {expenses.map((expense, index) => (
               <Tr key={index}>
-                <Td>${expense.amount}</Td>
+                <Td color={expense.expenseSituation === 'creditor' ? "green.500" : "red.500"}>${expense.amount}</Td>
                 <Td>{expense.description}</Td>
                 <Td>{expense.createdAt.toDateString()}</Td>
               </Tr>

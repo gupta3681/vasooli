@@ -12,12 +12,16 @@ import {
 import { collection, getDocs } from 'firebase/firestore';
 import { auth, db } from '../auth/firebase';
 import { formatCurrency } from '../helper/HelperFunc';
+import {getUserName} from '../helper/HelperFunc';
+
+
+
+
 
 const UserExpensesSummary = () => {
   const [balances, setBalances] = useState([]);
   const borderColor = useColorModeValue('gray.200', 'gray.600');
   const [currentUserUid, setCurrentUserUid] = useState(null);
-
 
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged(user => {
@@ -31,14 +35,21 @@ const UserExpensesSummary = () => {
       if (currentUserUid) {
         const balancesRef = collection(db, 'users', currentUserUid, 'balances');
         const querySnapshot = await getDocs(balancesRef);
-        const fetchedBalances = querySnapshot.docs.map(doc => ({
-          userUid: doc.id, // This assumes the doc.id is the other user's UID
-          balance: doc.data().balance,
-        }));
+        const balancePromises = querySnapshot.docs.map(async (doc) => {
+          const userUid = doc.id;
+          const userName = await getUserName(userUid);
+          return {
+            userName, // use userName instead of userUid
+            balance: doc.data().balance,
+          };
+        });
+  
+        const fetchedBalances = await Promise.all(balancePromises);
         setBalances(fetchedBalances);
+        console.log(fetchedBalances, 'fetchedBalances');
       }
     };
-
+  
     fetchBalances();
   }, [currentUserUid]);
 
@@ -48,15 +59,15 @@ const UserExpensesSummary = () => {
       <Table variant="simple">
         <Thead>
           <Tr>
-            <Th>User</Th>
+            <Th>User Name</Th>
             <Th isNumeric>Total Balance</Th>
           </Tr>
         </Thead>
         <Tbody>
-          {balances.map(({ userUid, balance }) => (
-            <Tr key={userUid}>
-              <Td>{userUid}</Td> {/* Replace with user-friendly identifier if available */}
-              <Td isNumeric>{formatCurrency(balance)}</Td>
+          {balances.map(({ userName, balance }) => (
+            <Tr key={userName}>
+              <Td>{userName}</Td>
+              <Td isNumeric  color={balance >= 0 ? "green.500" : "red.500"}>{formatCurrency(balance)}</Td>
             </Tr>
           ))}
         </Tbody>
