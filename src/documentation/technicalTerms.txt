@@ -1,3 +1,8 @@
 
 adderUid - refers to the uid of the of the individual who added this expense. 
 recipientUid - refers to the uid of the individual who was a part of this expense. 
+expenseSituation- 
+                 1. debtor- You owe them fully 
+                 2. creditor - They owe you fully 
+                 3. split1 - Split paid by you 
+                 4. split2 - Split paid by them

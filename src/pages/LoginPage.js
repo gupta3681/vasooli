@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 import {
   Box,
   Flex,
@@ -13,22 +13,22 @@ import {
   useColorModeValue,
   Text,
   Heading,
-} from '@chakra-ui/react';
-import { useForm } from 'react-hook-form'; // For form handling
-import { useNavigate } from 'react-router-dom'; // For routing
-import { auth } from '../auth/firebase'; // For Firebase authentication
-import { signInWithEmailAndPassword } from 'firebase/auth'; // For Firebase authentication
-import { GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
+} from "@chakra-ui/react";
+import { useForm } from "react-hook-form"; // For form handling
+import { useNavigate } from "react-router-dom"; // For routing
+import { auth } from "../auth/firebase"; // For Firebase authentication
+import { signInWithEmailAndPassword } from "firebase/auth"; // For Firebase authentication
+import { GoogleAuthProvider, signInWithPopup } from "firebase/auth";
 
 const LoginPage = () => {
   const { handleSubmit, register } = useForm();
   const navigate = useNavigate();
-  const bgColor = useColorModeValue('gray.50', 'gray.700');
+  const bgColor = useColorModeValue("gray.50", "gray.700");
   const onClickSignUp = () => {
-    navigate('/signup');
+    navigate("/signup");
   };
 
-  const onLogin = async data => {
+  const onLogin = async (data) => {
     try {
       const userCredential = await signInWithEmailAndPassword(
         auth,
@@ -36,9 +36,9 @@ const LoginPage = () => {
         data.password
       );
       console.log(userCredential);
-      navigate('/dashboard');
+      navigate("/dashboard");
     } catch (error) {
-      console.error('Error during login: ', error);
+      console.error("Error during login: ", error);
       // Handle login errors.
     }
   };
@@ -51,9 +51,9 @@ const LoginPage = () => {
       const token = credential.accessToken;
       // The signed-in user info.
       const user = result.user;
-      navigate('/dashboard');
+      navigate("/dashboard");
     } catch (error) {
-      console.error('Error during Google login: ', error);
+      console.error("Error during Google login: ", error);
       // Handle login errors here.
     }
   };
@@ -68,7 +68,7 @@ const LoginPage = () => {
       <Box
         p={8}
         maxWidth="400px"
-        width={'full'}
+        width={"full"}
         borderWidth={1}
         borderRadius={8}
         boxShadow="lg"
@@ -83,7 +83,7 @@ const LoginPage = () => {
               <Input
                 type="email"
                 placeholder="Enter your email"
-                {...register('email')}
+                {...register("email")}
               />
             </FormControl>
             <FormControl mt={6} isRequired>
@@ -91,7 +91,7 @@ const LoginPage = () => {
               <Input
                 type="password"
                 placeholder="Enter your password"
-                {...register('password')}
+                {...register("password")}
               />
             </FormControl>
             <Checkbox mt={6}>I'm not a robot</Checkbox>

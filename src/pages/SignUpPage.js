@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 import {
   Box,
   Flex,
@@ -9,18 +9,18 @@ import {
   Image,
   useColorModeValue,
   Heading,
-} from '@chakra-ui/react';
-import { useForm } from 'react-hook-form';
-import { auth } from '../auth/firebase';
-import { useNavigate } from 'react-router-dom';
-import { createUserWithEmailAndPassword } from 'firebase/auth';
+} from "@chakra-ui/react";
+import { useForm } from "react-hook-form";
+import { auth } from "../auth/firebase";
+import { useNavigate } from "react-router-dom";
+import { createUserWithEmailAndPassword } from "firebase/auth";
 
 const SignUpPage = () => {
   const { handleSubmit, register } = useForm();
   const navigate = useNavigate();
-  const bgColor = useColorModeValue('gray.50', 'gray.700');
+  const bgColor = useColorModeValue("gray.50", "gray.700");
 
-  const onSignUp = async data => {
+  const onSignUp = async (data) => {
     try {
       const userCredential = await createUserWithEmailAndPassword(
         auth,
@@ -28,12 +28,11 @@ const SignUpPage = () => {
         data.password
       );
       console.log(userCredential);
-      navigate('/dashboard');
+      navigate("/dashboard");
     } catch (error) {
-      console.error('Error during sign-up: ', error);
+      console.error("Error during sign-up: ", error);
     }
   };
-  
 
   return (
     <Flex
@@ -41,11 +40,11 @@ const SignUpPage = () => {
       align="center"
       justify="center"
       bg={bgColor}
-      direction={{ base: 'column', md: 'row' }}
+      direction={{ base: "column", md: "row" }}
     >
       <Box
-        flexBasis={{ base: '100%', md: '50%' }}
-        display={{ base: 'none', md: 'block' }}
+        flexBasis={{ base: "100%", md: "50%" }}
+        display={{ base: "none", md: "block" }}
       >
         <Image
           src="/signUp.png" // Replace with the path to your image
@@ -75,7 +74,7 @@ const SignUpPage = () => {
               <Input
                 type="text"
                 placeholder="Your full name"
-                {...register('name')}
+                {...register("name")}
               />
             </FormControl>
             <FormControl id="email" isRequired mt={4}>
@@ -83,7 +82,7 @@ const SignUpPage = () => {
               <Input
                 type="email"
                 placeholder="Enter your email"
-                {...register('email')}
+                {...register("email")}
               />
             </FormControl>
             <FormControl id="password" isRequired mt={4}>
@@ -91,7 +90,7 @@ const SignUpPage = () => {
               <Input
                 type="password"
                 placeholder="Create a password"
-                {...register('password')}
+                {...register("password")}
               />
             </FormControl>
             <Button
