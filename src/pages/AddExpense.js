@@ -34,7 +34,7 @@ const AddExpense = ({ onExpenseAdded }) => {
   const [expenseSituation, setExpenseSituation] = useState("youOweThem"); // Default to 'you owe them'
   const toast = useToast();
   const navigate = useNavigate();
-  const borderColor = useColorModeValue("gray.200", "gray.600");
+  const borderColor = useColorModeValue("white.500", "white.200");
 
   const handleAddExpense = async () => {
     try {
@@ -185,62 +185,57 @@ const AddExpense = ({ onExpenseAdded }) => {
       });
     }
   };
-
   return (
-    <Box
-      borderRadius="lg"
-      shadow="lg"
-      borderWidth="1px"
-      borderColor={borderColor}
-      minWidth={{ base: "100%", sm: "100%", md: "100%" }}
-      maxWidth={{ base: "100%", sm: "100%", md: "800px" }} // Adjust this line
+    <VStack
+      spacing={4}
+      align="stretch"
+      m={4}
+      width={{ base: "100%", md: "auto" }}
     >
-      <VStack spacing={4} align="stretch" m={4}>
-        <FormControl isRequired>
-          <FormLabel htmlFor="amount">Amount</FormLabel>
-          <NumberInput>
-            <NumberInputField
-              id="amount"
-              value={amount}
-              onChange={(e) => setAmount(e.target.value)}
-            />
-          </NumberInput>
-        </FormControl>
-        <FormControl isRequired>
-          <FormLabel htmlFor="email">Recipient's Email</FormLabel>
-          <Input
-            id="email"
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
+      <FormControl isRequired>
+        <FormLabel htmlFor="amount">Amount</FormLabel>
+        <NumberInput>
+          <NumberInputField
+            id="amount"
+            value={amount}
+            onChange={(e) => setAmount(e.target.value)}
           />
-        </FormControl>
-        <FormControl isRequired>
-          <FormLabel htmlFor="description">Description</FormLabel>
-          <Input
-            id="description"
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-          />
-        </FormControl>
-        <FormControl isRequired>
-          <FormLabel htmlFor="expenseSituation">Expense Situation</FormLabel>
-          <Select
-            id="expenseSituation"
-            value={expenseSituation}
-            onChange={(e) => setExpenseSituation(e.target.value)}
-          >
-            <option value="youOweThem">You Owe Them Fully </option>
-            <option value="theyOweYou">They Owe You Fully </option>
-            <option value="split1">Split paid by you </option>
-            <option value="split2">Split paid by them </option>
-          </Select>
-        </FormControl>
-        <Button onClick={handleAddExpense} colorScheme="green" isFullWidth>
-          Add Expense
-        </Button>
-      </VStack>
-    </Box>
+        </NumberInput>
+      </FormControl>
+      <FormControl isRequired>
+        <FormLabel htmlFor="email">Recipient's Email</FormLabel>
+        <Input
+          id="email"
+          type="email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+        />
+      </FormControl>
+      <FormControl isRequired>
+        <FormLabel htmlFor="description">Description</FormLabel>
+        <Input
+          id="description"
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
+        />
+      </FormControl>
+      <FormControl isRequired>
+        <FormLabel htmlFor="expenseSituation">Expense Situation</FormLabel>
+        <Select
+          id="expenseSituation"
+          value={expenseSituation}
+          onChange={(e) => setExpenseSituation(e.target.value)}
+        >
+          <option value="youOweThem">You Owe Them Fully </option>
+          <option value="theyOweYou">They Owe You Fully </option>
+          <option value="split1">Split paid by you </option>
+          <option value="split2">Split paid by them </option>
+        </Select>
+      </FormControl>
+      <Button onClick={handleAddExpense} colorScheme="teal" isFullWidth>
+        Add Expense
+      </Button>
+    </VStack>
   );
 };
 

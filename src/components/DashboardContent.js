@@ -10,13 +10,23 @@ import {
   Avatar,
   useColorModeValue,
   Icon,
+  useDisclosure,
+  Modal,
+  ModalOverlay,
+  ModalContent,
+  ModalHeader,
+  ModalCloseButton,
+  ModalBody,
+  ModalFooter,
 } from "@chakra-ui/react";
+
 import { FaList, FaChartBar } from "react-icons/fa";
 import { formatCurrency } from "../helper/HelperFunc";
 import { collection, getDocs } from "firebase/firestore";
 import { auth, db } from "../auth/firebase";
 import { getUserName } from "../helper/HelperFunc";
 import { useEffect, useState } from "react";
+import AddExpense from "../pages/AddExpense";
 
 const DashboardContent = () => {
   const buttonSize = useBreakpointValue({ base: "sm", md: "md" });
@@ -27,6 +37,11 @@ const DashboardContent = () => {
 
   const [balances, setBalances] = useState([]);
   const [currentUserUid, setCurrentUserUid] = useState(null);
+  const [totalUserBalance, setTotalUserBalance] = useState(0);
+  const [totalOwedToYou, setTotalOwedToYou] = useState(0);
+  const [totalYouOwe, setTotalYouOwe] = useState(0);
+
+  const { isOpen, onOpen, onClose } = useDisclosure();
 
   // Fetch balances when the component mounts
   useEffect(() => {
@@ -56,25 +71,53 @@ const DashboardContent = () => {
     return unsubscribe;
   }, [currentUserUid]);
 
-  const youOweList = balances
-    .filter((balance) => balance.balance > 0)
-    .map((balance) => (
-      <Flex key={balance.userName} align="center" mb={2} mt={2}>
-        <Avatar name={balance.userName} size={avatarSize} mr={2} />
-        <Text fontSize="md">
-          You owe {balance.userName} {formatCurrency(balance.balance)}
-        </Text>
-      </Flex>
-    ));
+  useEffect(() => {
+    const totalUserBalance = balances.reduce((acc, balance) => {
+      return acc + balance.balance;
+    }, 0);
+    setTotalUserBalance(totalUserBalance);
+    console.log(totalUserBalance, "totalUserBalance");
+
+    const totalOwedToYou = balances.reduce((acc, balance) => {
+      // Only accumulate positive balances
+      if (balance.balance > 0) {
+        return acc + balance.balance;
+      }
+      return acc;
+    }, 0);
+    setTotalOwedToYou(totalOwedToYou);
+    console.log(totalOwedToYou, "totalOwedToYou");
+
+    const totalYouOwe = balances.reduce((acc, balance) => {
+      // Only accumulate negative balances
+      if (balance.balance < 0) {
+        return acc + balance.balance;
+      }
+      return acc;
+    }, 0);
+    setTotalYouOwe(totalYouOwe);
+    console.log(totalYouOwe, "totalYouOwe");
+  }, [balances]);
 
   const youAreOwedList = balances
-    .filter((balance) => balance.balance < 0)
+    .filter((balance) => balance.balance > 0)
     .map((balance) => (
       <Flex key={balance.userName} align="center" mb={2} mt={2}>
         <Avatar name={balance.userName} size={avatarSize} mr={2} />
         <Text fontSize="md">
           {balance.userName} owes you{" "}
           {formatCurrency(Math.abs(balance.balance))}
+        </Text>
+      </Flex>
+    ));
+
+  const youOweList = balances
+    .filter((balance) => balance.balance < 0)
+    .map((balance) => (
+      <Flex key={balance.userName} align="center" mb={2} mt={2}>
+        <Avatar name={balance.userName} size={avatarSize} mr={2} />
+        <Text fontSize="md">
+          You owe {balance.userName} {formatCurrency(Math.abs(balance.balance))}
         </Text>
       </Flex>
     ));
@@ -92,7 +135,7 @@ const DashboardContent = () => {
           Dashboard
         </Text>
         <Stack direction="row" spacing={2}>
-          <Button colorScheme="teal" size={buttonSize}>
+          <Button colorScheme="teal" size={buttonSize} onClick={onOpen}>
             Add an expense
           </Button>
           <Button variant="outline" size={buttonSize}>
@@ -114,8 +157,12 @@ const DashboardContent = () => {
           <Text mb={2} fontSize="sm">
             Total Balance
           </Text>
-          <Text fontSize="xl" fontWeight="bold" color="green.500">
-            + $25.00
+          <Text
+            fontSize="xl"
+            fontWeight="bold"
+            color={totalUserBalance > 0 ? "green.500" : "red.500"}
+          >
+            {formatCurrency(totalUserBalance)}
           </Text>
         </Box>
         <Box
@@ -130,8 +177,8 @@ const DashboardContent = () => {
           <Text mb={2} fontSize="sm">
             You owe
           </Text>
-          <Text fontSize="xl" fontWeight="bold">
-            $0.00
+          <Text fontSize="xl" fontWeight="bold" color="red.500">
+            {formatCurrency(Math.abs(totalYouOwe))}
           </Text>
         </Box>
         <Box
@@ -146,7 +193,7 @@ const DashboardContent = () => {
             You are owed
           </Text>
           <Text fontSize="xl" fontWeight="bold" color="green.500">
-            $25.00
+            {formatCurrency(totalOwedToYou)}
           </Text>
         </Box>
       </Flex>
@@ -192,6 +239,17 @@ const DashboardContent = () => {
           )}
         </Box>
       </Flex>
+      <Modal isOpen={isOpen} onClose={onClose} colorScheme="teal">
+        <ModalOverlay />
+        <ModalContent borderColor="teal.500" borderWidth="1px">
+          <ModalHeader>Add Your Exepense</ModalHeader>
+          <ModalCloseButton />
+          <ModalBody>
+            <AddExpense />
+          </ModalBody>
+          <ModalFooter></ModalFooter>
+        </ModalContent>
+      </Modal>
     </Flex>
   );
 };

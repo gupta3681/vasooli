@@ -33,7 +33,7 @@ function App() {
           // The user is new, create their document with initial balance
           await setDoc(userRef, {
             email: user.email,
-            balance: 0,
+            username: user.displayName,
             // Add any other initial user details
           });
         } else {

@@ -95,7 +95,7 @@ const SignUpPage = () => {
             </FormControl>
             <Button
               type="submit"
-              colorScheme="blue"
+              colorScheme="teal"
               size="lg"
               fontSize="md"
               width="full"
