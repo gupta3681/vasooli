@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 import {
   Box,
   Flex,
@@ -7,18 +7,18 @@ import {
   Image,
   Heading,
   Stack,
-} from '@chakra-ui/react';
-import { useNavigate } from 'react-router-dom';
+} from "@chakra-ui/react";
+import { useNavigate } from "react-router-dom";
 
 const HomePage = () => {
   const navigate = useNavigate();
 
   const onClickLogin = () => {
-    navigate('/login');
+    navigate("/login");
   };
 
   const onClickSignUp = () => {
-    navigate('/signup');
+    navigate("/signup");
   };
 
   return (
@@ -35,7 +35,7 @@ const HomePage = () => {
         </Stack>
       </Flex>
       <Flex
-        direction={{ base: 'column', md: 'row' }} // Adjust direction for responsiveness
+        direction={{ base: "column", md: "row" }} // Adjust direction for responsiveness
         align="center"
         justify="center"
         p={8}
@@ -54,16 +54,16 @@ const HomePage = () => {
         </Box>
         <Box
           flex="1"
-          display={{ base: 'flex' }} 
+          display={{ base: "flex" }}
           alignItems="center"
           justifyContent="center"
-          maxW={{ base: '100%', md: '50%' }}
+          maxW={{ base: "100%", md: "50%" }}
         >
           <Image
             src="/landing-image.png"
             alt="Vasooli Landing Image"
             maxW="100%"
-            maxH={{ base: 'auto', md: '400px' }} 
+            maxH={{ base: "auto", md: "400px" }}
             objectFit="contain"
           />
         </Box>

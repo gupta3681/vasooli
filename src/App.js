@@ -12,8 +12,9 @@ import { auth, db } from "./auth/firebase"; // Adjust this path to where your Fi
 import HomePage from "./pages/HomePage";
 import LoginPage from "./pages/LoginPage";
 import SignUpPage from "./pages/SignUpPage";
-import UserPage from "./pages/UserPage";
+import UserPage from "./pages/Dashboard";
 import { getDoc } from "firebase/firestore";
+import Dashboard from "./pages/Dashboard";
 // Import other pages here...
 
 function App() {
@@ -27,23 +28,22 @@ function App() {
       if (user) {
         const userRef = doc(db, "users", user.uid);
         const docSnap = await getDoc(userRef);
-  
+
         if (!docSnap.exists()) {
           // The user is new, create their document with initial balance
           await setDoc(userRef, {
             email: user.email,
-            balance: 0,
+            username: user.displayName,
             // Add any other initial user details
           });
         } else {
-          console.log('User already exists.')
+          console.log("User already exists.");
         }
       }
     });
-  
+
     return () => unsubscribe();
   }, []);
-  
 
   // A component to handle protected routes
   const ProtectedRoute = ({ children }) => {
@@ -53,7 +53,6 @@ function App() {
     }
     return children; // User is logged in, render the protected component
   };
-
 
   return (
     <ChakraProvider theme={theme}>
@@ -67,7 +66,7 @@ function App() {
             path="/dashboard"
             element={
               <ProtectedRoute>
-                <UserPage />
+                <Dashboard />
               </ProtectedRoute>
             }
           />
