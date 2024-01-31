@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { ViewIcon, SettingsIcon, EmailIcon } from "@chakra-ui/icons";
 import { InfoIcon, AddIcon, QuestionOutlineIcon } from "@chakra-ui/icons";
 import {
@@ -21,6 +21,7 @@ import {
   Spacer,
   IconButton,
 } from "@chakra-ui/react";
+import { FaSignOutAlt } from "react-icons/fa";
 
 const SidebarContent = ({ onLogout, isExpanded }) => {
   const [email, setEmail] = useState("");
@@ -31,6 +32,12 @@ const SidebarContent = ({ onLogout, isExpanded }) => {
     console.log("email");
     setEmail("");
   };
+
+  const [friends, setFriends] = useState([]);
+
+  useEffect(() => {
+    // Fetch friends from the database
+  }, []);
 
   return (
     <VStack spacing={4} align="start" p={4}>
@@ -52,7 +59,7 @@ const SidebarContent = ({ onLogout, isExpanded }) => {
         w="full"
         onClick={onLogout}
       >
-        <Icon as={ViewIcon} mr={2} />
+        <Icon as={FaSignOutAlt} mr={2} />
         <Text fontSize="medium" fontWeight="light">
           Sign Out
         </Text>

@@ -26,15 +26,14 @@ import { collection, getDocs } from "firebase/firestore";
 import { auth, db } from "../auth/firebase";
 import { getUserName } from "../helper/HelperFunc";
 import { useEffect, useState } from "react";
-import AddExpense from "../pages/AddExpense";
-
+import AddExpense from "./AddExpense";
+import SettleUp from "./SettleUp";
 const DashboardContent = () => {
   const buttonSize = useBreakpointValue({ base: "sm", md: "md" });
   const avatarSize = useBreakpointValue({ base: "sm", md: "md" });
   const isMobile = useBreakpointValue({ base: true, md: false });
   const bgColor = useColorModeValue("gray.50", "gray.700");
   const borderColor = useColorModeValue("gray.200", "gray.600");
-
   const [balances, setBalances] = useState([]);
   const [currentUserUid, setCurrentUserUid] = useState(null);
   const [totalUserBalance, setTotalUserBalance] = useState(0);
@@ -42,6 +41,11 @@ const DashboardContent = () => {
   const [totalYouOwe, setTotalYouOwe] = useState(0);
 
   const { isOpen, onOpen, onClose } = useDisclosure();
+  const {
+    isOpen: isSettleUpOpen,
+    onOpen: onSettleUpOpen,
+    onClose: onSettleUpClose,
+  } = useDisclosure();
 
   // Fetch balances when the component mounts
   useEffect(() => {
@@ -138,7 +142,7 @@ const DashboardContent = () => {
           <Button colorScheme="teal" size={buttonSize} onClick={onOpen}>
             Add an expense
           </Button>
-          <Button variant="outline" size={buttonSize}>
+          <Button variant="outline" size={buttonSize} onClick={onSettleUpOpen}>
             Settle up
           </Button>
         </Stack>
@@ -245,7 +249,22 @@ const DashboardContent = () => {
           <ModalHeader>Add Your Exepense</ModalHeader>
           <ModalCloseButton />
           <ModalBody>
-            <AddExpense />
+            <AddExpense onExpenseAdded={onClose} />
+          </ModalBody>
+          <ModalFooter></ModalFooter>
+        </ModalContent>
+      </Modal>
+      <Modal
+        isOpen={isSettleUpOpen}
+        onClose={onSettleUpClose}
+        colorScheme="teal"
+      >
+        <ModalOverlay />
+        <ModalContent borderColor="teal.500" borderWidth="1px">
+          <ModalHeader>Settle Up</ModalHeader>
+          <ModalCloseButton />
+          <ModalBody>
+            <SettleUp onSettlementCompleted={onSettleUpClose} />
           </ModalBody>
           <ModalFooter></ModalFooter>
         </ModalContent>

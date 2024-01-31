@@ -1,35 +1,12 @@
 import React, { useEffect, useState } from "react";
-import {
-  Box,
-  Flex,
-  Button,
-  Text,
-  useColorModeValue,
-  Tabs,
-  TabList,
-  TabPanels,
-  Tab,
-  TabPanel,
-} from "@chakra-ui/react";
-import {
-  Modal,
-  ModalOverlay,
-  ModalContent,
-  ModalHeader,
-  ModalFooter,
-  ModalBody,
-  ModalCloseButton,
-  useDisclosure,
-} from "@chakra-ui/react";
+import { Box, Flex, Button, Text, useColorModeValue } from "@chakra-ui/react";
+import { useDisclosure } from "@chakra-ui/react";
 import { ScaleFade } from "@chakra-ui/react";
 import { signOut } from "firebase/auth";
 import { auth } from "../auth/firebase";
 import { useNavigate } from "react-router-dom";
-import AddExpenseForm from "./AddExpense";
 import { doc, getDoc } from "firebase/firestore";
 import { db } from "../auth/firebase";
-import UserExpenses from "../components/UserExpenses";
-import UserExpensesSummary from "../components/UserExpenseSummary";
 import { AddIcon, ViewIcon } from "@chakra-ui/icons";
 import NavBar from "../components/NavBar";
 import { emailShortner } from "../helper/HelperFunc";

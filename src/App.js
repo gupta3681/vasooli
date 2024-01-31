@@ -70,6 +70,7 @@ function App() {
               </ProtectedRoute>
             }
           />
+
           {/* More protected routes can be added here */}
         </Routes>
       </Router>
