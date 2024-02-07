@@ -15,6 +15,7 @@ import SignUpPage from "./pages/SignUpPage";
 import UserPage from "./pages/Dashboard";
 import { getDoc } from "firebase/firestore";
 import Dashboard from "./pages/Dashboard";
+import Settings from "./pages/Settings";
 // Import other pages here...
 
 function App() {
@@ -67,6 +68,14 @@ function App() {
             element={
               <ProtectedRoute>
                 <Dashboard />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/settings"
+            element={
+              <ProtectedRoute>
+                <Settings />
               </ProtectedRoute>
             }
           />
