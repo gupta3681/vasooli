@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { ViewIcon, SettingsIcon, EmailIcon } from "@chakra-ui/icons";
 import { InfoIcon, AddIcon, QuestionOutlineIcon } from "@chakra-ui/icons";
 import {
@@ -7,13 +7,6 @@ import {
   VStack,
   Text,
   useColorModeValue,
-  Drawer,
-  DrawerBody,
-  DrawerHeader,
-  DrawerOverlay,
-  DrawerContent,
-  DrawerCloseButton,
-  useDisclosure,
   Icon,
   Divider,
   Input,
@@ -21,26 +14,46 @@ import {
   Spacer,
   IconButton,
 } from "@chakra-ui/react";
+import { FaSignOutAlt } from "react-icons/fa";
+import { useNavigate } from "react-router-dom";
 
 const SidebarContent = ({ onLogout, isExpanded }) => {
   const [email, setEmail] = useState("");
   const borderColor = useColorModeValue("teal.500", "teal.200"); // Change as per your color mode
   const bgColor = useColorModeValue("gray.50", "gray.700");
   const textColor = useColorModeValue("gray.600", "gray.200");
+  const navigate = useNavigate();
+
   const handleInvite = () => {
     console.log("email");
     setEmail("");
   };
 
+  const [friends, setFriends] = useState([]);
+
+  useEffect(() => {
+    // Fetch friends from the database
+  }, []);
+
   return (
     <VStack spacing={4} align="start" p={4}>
-      <Button variant="ghost" justifyContent="start" w="full">
+      <Button
+        variant="ghost"
+        justifyContent="start"
+        w="full"
+        onClick={() => navigate("/dashboard")}
+      >
         <Icon as={ViewIcon} mr={2} />
         <Text fontSize="medium" fontWeight="light">
           Dashboard
         </Text>
       </Button>
-      <Button variant="ghost" justifyContent="start" w="full">
+      <Button
+        variant="ghost"
+        justifyContent="start"
+        w="full"
+        onClick={() => navigate("/settings")}
+      >
         <Icon as={SettingsIcon} mr={2} />
         <Text fontSize="medium" fontWeight="light">
           Settings
@@ -52,7 +65,7 @@ const SidebarContent = ({ onLogout, isExpanded }) => {
         w="full"
         onClick={onLogout}
       >
-        <Icon as={ViewIcon} mr={2} />
+        <Icon as={FaSignOutAlt} mr={2} />
         <Text fontSize="medium" fontWeight="light">
           Sign Out
         </Text>
@@ -117,7 +130,7 @@ const SidebarContent = ({ onLogout, isExpanded }) => {
           />
         </HStack>
         <Text fontSize="sm" color={textColor}>
-          You do not have any groups yet.
+          We are currently developing this feature. Stay tuned!
         </Text>
       </Box>
       {/* Friends section */}

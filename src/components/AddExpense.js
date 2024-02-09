@@ -170,6 +170,7 @@ const AddExpense = ({ onExpenseAdded }) => {
       setAmount("");
       setEmail("");
       setDescription("");
+      
 
       // Optional callback for when an expense is successfully added
       if (onExpenseAdded) {

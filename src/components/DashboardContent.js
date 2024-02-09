@@ -26,15 +26,14 @@ import { collection, getDocs } from "firebase/firestore";
 import { auth, db } from "../auth/firebase";
 import { getUserName } from "../helper/HelperFunc";
 import { useEffect, useState } from "react";
-import AddExpense from "../pages/AddExpense";
-
+import AddExpense from "./AddExpense";
+import SettleUp from "./SettleUp";
 const DashboardContent = () => {
   const buttonSize = useBreakpointValue({ base: "sm", md: "md" });
   const avatarSize = useBreakpointValue({ base: "sm", md: "md" });
   const isMobile = useBreakpointValue({ base: true, md: false });
   const bgColor = useColorModeValue("gray.50", "gray.700");
   const borderColor = useColorModeValue("gray.200", "gray.600");
-
   const [balances, setBalances] = useState([]);
   const [currentUserUid, setCurrentUserUid] = useState(null);
   const [totalUserBalance, setTotalUserBalance] = useState(0);
@@ -42,62 +41,86 @@ const DashboardContent = () => {
   const [totalYouOwe, setTotalYouOwe] = useState(0);
 
   const { isOpen, onOpen, onClose } = useDisclosure();
+  const {
+    isOpen: isSettleUpOpen,
+    onOpen: onSettleUpOpen,
+    onClose: onSettleUpClose,
+  } = useDisclosure();
 
   // Fetch balances when the component mounts
+
+  // Using local state to store the user uid
   useEffect(() => {
+    // This effect runs once on mount to load the currentUserUid from localStorage
+    const storedUid = window.localStorage.getItem("currentUserUid");
+    if (storedUid) {
+      setCurrentUserUid(storedUid);
+    }
+
+    // Set up the listener for auth state changes
     const unsubscribe = auth.onAuthStateChanged((user) => {
-      setCurrentUserUid(user ? user.uid : null);
+      const uid = user ? user.uid : null;
+      setCurrentUserUid(uid);
+      // If there's a user, we also update localStorage
+      if (uid) {
+        window.localStorage.setItem("currentUserUid", uid);
+      } else {
+        window.localStorage.removeItem("currentUserUid");
+      }
     });
 
-    const fetchBalances = async () => {
-      if (currentUserUid) {
-        const balancesRef = collection(db, "users", currentUserUid, "balances");
-        const querySnapshot = await getDocs(balancesRef);
+    return () => unsubscribe(); // Cleanup the listener when the component unmounts
+  }, []); // Run this effect once on mount
 
-        // Use Promise.all to wait for all the getUserName Promises to resolve
-        const balances = await Promise.all(
+  useEffect(() => {
+    const fetchBalances = async (uid) => {
+      // Check for cached balances first
+      const cachedBalances = sessionStorage.getItem(`balances-${uid}`);
+      if (cachedBalances) {
+        setBalances(JSON.parse(cachedBalances));
+      } else {
+        const balancesRef = collection(db, "users", uid, "balances");
+        const querySnapshot = await getDocs(balancesRef);
+        const fetchedBalances = await Promise.all(
           querySnapshot.docs.map(async (doc) => {
             const userUid = doc.id;
-            const userName = await getUserName(userUid); // Await the Promise returned by getUserName
+            const userName = await getUserName(userUid);
             const balance = doc.data().balance;
-            return { userName, balance }; // Returns an object with userName and balance
+            return { userName, balance };
           })
         );
-        setBalances(balances); // Update state with the resolved array of balances
-        console.log(balances, "fetchedBalances");
+        setBalances(fetchedBalances);
+        // Cache the fetched balances
+        sessionStorage.setItem(
+          `balances-${uid}`,
+          JSON.stringify(fetchedBalances)
+        );
       }
     };
-    fetchBalances();
-    return unsubscribe;
+
+    const uid = window.localStorage.getItem("currentUserUid");
+    if (uid) {
+      fetchBalances(uid);
+    }
   }, [currentUserUid]);
 
   useEffect(() => {
-    const totalUserBalance = balances.reduce((acc, balance) => {
-      return acc + balance.balance;
-    }, 0);
-    setTotalUserBalance(totalUserBalance);
-    console.log(totalUserBalance, "totalUserBalance");
+    // Calculate and set total balances
+    const totalBalance = balances.reduce(
+      (acc, { balance }) => acc + balance,
+      0
+    );
+    const owedToYou = balances
+      .filter(({ balance }) => balance > 0)
+      .reduce((acc, { balance }) => acc + balance, 0);
+    const youOwe = balances
+      .filter(({ balance }) => balance < 0)
+      .reduce((acc, { balance }) => acc + balance, 0);
 
-    const totalOwedToYou = balances.reduce((acc, balance) => {
-      // Only accumulate positive balances
-      if (balance.balance > 0) {
-        return acc + balance.balance;
-      }
-      return acc;
-    }, 0);
-    setTotalOwedToYou(totalOwedToYou);
-    console.log(totalOwedToYou, "totalOwedToYou");
-
-    const totalYouOwe = balances.reduce((acc, balance) => {
-      // Only accumulate negative balances
-      if (balance.balance < 0) {
-        return acc + balance.balance;
-      }
-      return acc;
-    }, 0);
-    setTotalYouOwe(totalYouOwe);
-    console.log(totalYouOwe, "totalYouOwe");
-  }, [balances]);
+    setTotalUserBalance(totalBalance);
+    setTotalOwedToYou(owedToYou);
+    setTotalYouOwe(Math.abs(youOwe)); // Convert to a positive number for consistency
+  }, [balances]); // This effect runs when balances state updates
 
   const youAreOwedList = balances
     .filter((balance) => balance.balance > 0)
@@ -138,7 +161,7 @@ const DashboardContent = () => {
           <Button colorScheme="teal" size={buttonSize} onClick={onOpen}>
             Add an expense
           </Button>
-          <Button variant="outline" size={buttonSize}>
+          <Button variant="outline" size={buttonSize} onClick={onSettleUpOpen}>
             Settle up
           </Button>
         </Stack>
@@ -245,7 +268,22 @@ const DashboardContent = () => {
           <ModalHeader>Add Your Exepense</ModalHeader>
           <ModalCloseButton />
           <ModalBody>
-            <AddExpense />
+            <AddExpense onExpenseAdded={onClose} />
+          </ModalBody>
+          <ModalFooter></ModalFooter>
+        </ModalContent>
+      </Modal>
+      <Modal
+        isOpen={isSettleUpOpen}
+        onClose={onSettleUpClose}
+        colorScheme="teal"
+      >
+        <ModalOverlay />
+        <ModalContent borderColor="teal.500" borderWidth="1px">
+          <ModalHeader>Settle Up</ModalHeader>
+          <ModalCloseButton />
+          <ModalBody>
+            <SettleUp onSettlementCompleted={onSettleUpClose} />
           </ModalBody>
           <ModalFooter></ModalFooter>
         </ModalContent>

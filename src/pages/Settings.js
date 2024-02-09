@@ -1,20 +1,16 @@
 import React, { useEffect, useState } from "react";
 import { Box, Flex, Button, Text, useColorModeValue } from "@chakra-ui/react";
 import { useDisclosure } from "@chakra-ui/react";
-import { ScaleFade } from "@chakra-ui/react";
 import { signOut } from "firebase/auth";
 import { auth } from "../auth/firebase";
 import { useNavigate } from "react-router-dom";
 import { doc, getDoc } from "firebase/firestore";
 import { db } from "../auth/firebase";
-import { AddIcon, ViewIcon } from "@chakra-ui/icons";
 import NavBar from "../components/NavBar";
-import { emailShortner } from "../helper/HelperFunc";
 import Sidebar from "../components/SideBar";
-import DashboardContent from "../components/DashboardContent";
-import TrophyBar from "../components/TrophyBar";
+import SettingsContent from "../components/SettingsContent";
 
-const Dashboard = () => {
+const Settings = () => {
   const bgColor = useColorModeValue("gray.50", "gray.700");
   const borderColor = useColorModeValue("gray.200", "gray.600");
   const navigate = useNavigate();
@@ -38,6 +34,14 @@ const Dashboard = () => {
       }
     }
   };
+  const handleLogout = async () => {
+    try {
+      await signOut(auth);
+      navigate("/login");
+    } catch (error) {
+      console.error("Error signing out: ", error);
+    }
+  };
 
   useEffect(() => {
     fetchUserBalance();
@@ -47,30 +51,13 @@ const Dashboard = () => {
     fetchUserBalance();
   };
 
-  const handleLogout = async () => {
-    try {
-      await signOut(auth);
-      navigate("/login");
-    } catch (error) {
-      console.error("Error signing out: ", error);
-    }
-  };
-  const toggleFormVisibility = () => {
-    setShowForm(!showForm);
-    setShowExpenses(false);
-  };
-  const toggleExpensesVisibility = () => {
-    setShowExpenses(!showExpenses);
-    setShowForm(false);
-  };
   return (
     <Box bg={bgColor} minH="100vh">
       <NavBar email={auth.currentUser?.email} onLogout={handleLogout} />
       <Sidebar />
-      <TrophyBar />
-      <DashboardContent />
+      <SettingsContent />
     </Box>
   );
 };
 
-export default Dashboard;
+export default Settings;

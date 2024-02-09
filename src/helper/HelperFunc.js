@@ -1,6 +1,8 @@
 import { doc, getDoc } from "firebase/firestore";
 import { db } from "../auth/firebase";
 import { auth } from "../auth/firebase";
+import { signOut } from "firebase/auth";
+import { useNavigate } from "react-router-dom";
 
 export const formatCurrency = (amount) => {
   return `$${amount.toFixed(2)}`;
