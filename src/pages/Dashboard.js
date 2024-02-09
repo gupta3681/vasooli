@@ -12,6 +12,7 @@ import NavBar from "../components/NavBar";
 import { emailShortner } from "../helper/HelperFunc";
 import Sidebar from "../components/SideBar";
 import DashboardContent from "../components/DashboardContent";
+import TrophyBar from "../components/TrophyBar";
 
 const Dashboard = () => {
   const bgColor = useColorModeValue("gray.50", "gray.700");
@@ -66,6 +67,7 @@ const Dashboard = () => {
     <Box bg={bgColor} minH="100vh">
       <NavBar email={auth.currentUser?.email} onLogout={handleLogout} />
       <Sidebar />
+      <TrophyBar />
       <DashboardContent />
     </Box>
   );

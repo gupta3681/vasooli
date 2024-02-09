@@ -48,60 +48,79 @@ const DashboardContent = () => {
   } = useDisclosure();
 
   // Fetch balances when the component mounts
+
+  // Using local state to store the user uid
   useEffect(() => {
+    // This effect runs once on mount to load the currentUserUid from localStorage
+    const storedUid = window.localStorage.getItem("currentUserUid");
+    if (storedUid) {
+      setCurrentUserUid(storedUid);
+    }
+
+    // Set up the listener for auth state changes
     const unsubscribe = auth.onAuthStateChanged((user) => {
-      setCurrentUserUid(user ? user.uid : null);
+      const uid = user ? user.uid : null;
+      setCurrentUserUid(uid);
+      // If there's a user, we also update localStorage
+      if (uid) {
+        window.localStorage.setItem("currentUserUid", uid);
+      } else {
+        window.localStorage.removeItem("currentUserUid");
+      }
     });
 
-    const fetchBalances = async () => {
-      if (currentUserUid) {
-        const balancesRef = collection(db, "users", currentUserUid, "balances");
-        const querySnapshot = await getDocs(balancesRef);
+    return () => unsubscribe(); // Cleanup the listener when the component unmounts
+  }, []); // Run this effect once on mount
 
-        // Use Promise.all to wait for all the getUserName Promises to resolve
-        const balances = await Promise.all(
+  useEffect(() => {
+    const fetchBalances = async (uid) => {
+      // Check for cached balances first
+      const cachedBalances = sessionStorage.getItem(`balances-${uid}`);
+      if (cachedBalances) {
+        setBalances(JSON.parse(cachedBalances));
+      } else {
+        const balancesRef = collection(db, "users", uid, "balances");
+        const querySnapshot = await getDocs(balancesRef);
+        const fetchedBalances = await Promise.all(
           querySnapshot.docs.map(async (doc) => {
             const userUid = doc.id;
-            const userName = await getUserName(userUid); // Await the Promise returned by getUserName
+            const userName = await getUserName(userUid);
             const balance = doc.data().balance;
-            return { userName, balance }; // Returns an object with userName and balance
+            return { userName, balance };
           })
         );
-        setBalances(balances); // Update state with the resolved array of balances
-        console.log(balances, "fetchedBalances");
+        setBalances(fetchedBalances);
+        // Cache the fetched balances
+        sessionStorage.setItem(
+          `balances-${uid}`,
+          JSON.stringify(fetchedBalances)
+        );
       }
     };
-    fetchBalances();
-    return unsubscribe;
+
+    const uid = window.localStorage.getItem("currentUserUid");
+    if (uid) {
+      fetchBalances(uid);
+    }
   }, [currentUserUid]);
 
   useEffect(() => {
-    const totalUserBalance = balances.reduce((acc, balance) => {
-      return acc + balance.balance;
-    }, 0);
-    setTotalUserBalance(totalUserBalance);
-    console.log(totalUserBalance, "totalUserBalance");
+    // Calculate and set total balances
+    const totalBalance = balances.reduce(
+      (acc, { balance }) => acc + balance,
+      0
+    );
+    const owedToYou = balances
+      .filter(({ balance }) => balance > 0)
+      .reduce((acc, { balance }) => acc + balance, 0);
+    const youOwe = balances
+      .filter(({ balance }) => balance < 0)
+      .reduce((acc, { balance }) => acc + balance, 0);
 
-    const totalOwedToYou = balances.reduce((acc, balance) => {
-      // Only accumulate positive balances
-      if (balance.balance > 0) {
-        return acc + balance.balance;
-      }
-      return acc;
-    }, 0);
-    setTotalOwedToYou(totalOwedToYou);
-    console.log(totalOwedToYou, "totalOwedToYou");
-
-    const totalYouOwe = balances.reduce((acc, balance) => {
-      // Only accumulate negative balances
-      if (balance.balance < 0) {
-        return acc + balance.balance;
-      }
-      return acc;
-    }, 0);
-    setTotalYouOwe(totalYouOwe);
-    console.log(totalYouOwe, "totalYouOwe");
-  }, [balances]);
+    setTotalUserBalance(totalBalance);
+    setTotalOwedToYou(owedToYou);
+    setTotalYouOwe(Math.abs(youOwe)); // Convert to a positive number for consistency
+  }, [balances]); // This effect runs when balances state updates
 
   const youAreOwedList = balances
     .filter((balance) => balance.balance > 0)
