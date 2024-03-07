@@ -7,40 +7,22 @@ import {
   Navigate,
 } from "react-router-dom";
 import { onAuthStateChanged } from "firebase/auth";
-import { doc, setDoc } from "firebase/firestore"; // Import setDoc and doc
-import { auth, db } from "./auth/firebase"; // Adjust this path to where your Firebase auth and Firestore are initialized
+import { auth } from "./auth/firebase"; // Adjust this path to your Firebase initialization
 import HomePage from "./pages/HomePage";
 import LoginPage from "./pages/LoginPage";
 import SignUpPage from "./pages/SignUpPage";
-import UserPage from "./pages/Dashboard";
-import { getDoc } from "firebase/firestore";
 import Dashboard from "./pages/Dashboard";
 import Settings from "./pages/Settings";
 // Import other pages here...
 
 function App() {
   const [currentUser, setCurrentUser] = useState(null);
-  const [loading, setLoading] = useState(true); // Loading state
+  const [loading, setLoading] = useState(true);
+
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
       setCurrentUser(user);
       setLoading(false);
-
-      if (user) {
-        const userRef = doc(db, "users", user.uid);
-        const docSnap = await getDoc(userRef);
-
-        if (!docSnap.exists()) {
-          // The user is new, create their document with initial balance
-          await setDoc(userRef, {
-            email: user.email,
-            username: user.displayName,
-            // Add any other initial user details
-          });
-        } else {
-          console.log("User already exists.");
-        }
-      }
     });
 
     return () => unsubscribe();
@@ -79,7 +61,6 @@ function App() {
               </ProtectedRoute>
             }
           />
-
           {/* More protected routes can be added here */}
         </Routes>
       </Router>

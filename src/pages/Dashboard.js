@@ -51,6 +51,7 @@ const Dashboard = () => {
     try {
       await signOut(auth);
       navigate("/login");
+      console.log("Logged out");
     } catch (error) {
       console.error("Error signing out: ", error);
     }

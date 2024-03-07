@@ -19,6 +19,8 @@ import { useNavigate } from "react-router-dom"; // For routing
 import { auth } from "../auth/firebase"; // For Firebase authentication
 import { signInWithEmailAndPassword } from "firebase/auth"; // For Firebase authentication
 import { GoogleAuthProvider, signInWithPopup } from "firebase/auth";
+import { doc, getDoc, setDoc } from "firebase/firestore"; // For Firebase Firestore
+import { db } from "../auth/firebase"; // For Firebase Firestore
 
 const LoginPage = () => {
   const { handleSubmit, register } = useForm();
@@ -42,15 +44,32 @@ const LoginPage = () => {
       // Handle login errors.
     }
   };
+
   const onGoogleLogin = async () => {
     const provider = new GoogleAuthProvider();
     try {
       const result = await signInWithPopup(auth, provider);
-      // This gives you a Google Access Token. You can use it to access Google APIs.
-      const credential = GoogleAuthProvider.credentialFromResult(result);
-      const token = credential.accessToken;
       // The signed-in user info.
       const user = result.user;
+
+      // Optional: Check if the user already exists in Firestore
+      const userRef = doc(db, "users", user.uid);
+      const docSnap = await getDoc(userRef);
+
+      if (!docSnap.exists()) {
+        // User does not exist, create a new user document in Firestore
+        await setDoc(doc(db, "users", user.uid), {
+          name: user.displayName, // User's name from Google account
+          email: user.email, // User's email from Google account
+          creditScore: 1000, // Add any other user details you might need
+          // Add any other user details you might need
+        });
+        console.log("User profile created in Firestore.");
+      } else {
+        // User already exists, you can update the document or simply proceed
+        console.log("User already exists in Firestore.");
+      }
+
       navigate("/dashboard");
     } catch (error) {
       console.error("Error during Google login: ", error);

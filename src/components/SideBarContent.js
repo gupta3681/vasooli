@@ -16,8 +16,10 @@ import {
 } from "@chakra-ui/react";
 import { FaSignOutAlt } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
+import { signOut } from "firebase/auth";
+import { auth } from "../auth/firebase";
 
-const SidebarContent = ({ onLogout, isExpanded }) => {
+const SidebarContent = ({ isExpanded }) => {
   const [email, setEmail] = useState("");
   const borderColor = useColorModeValue("teal.500", "teal.200"); // Change as per your color mode
   const bgColor = useColorModeValue("gray.50", "gray.700");
@@ -29,10 +31,29 @@ const SidebarContent = ({ onLogout, isExpanded }) => {
     setEmail("");
   };
 
+  const onLogout = async () => {
+    try {
+      await signOut(auth);
+      navigate("/login");
+      console.log("Logged out");
+    } catch (error) {
+      console.error("Error signing out: ", error);
+    }
+  };
+
   const [friends, setFriends] = useState([]);
 
   useEffect(() => {
-    // Fetch friends from the database
+    // Assuming you're storing balances data in sessionStorage under the key "balances-<userID>"
+    const currentUserUid = localStorage.getItem("currentUserUid"); // Get the current user's UID
+
+    const storedBalances = sessionStorage.getItem(`balances-${currentUserUid}`);
+    console.log("storedBalances", storedBalances);
+    if (storedBalances) {
+      const balances = JSON.parse(storedBalances);
+      const friendUsernames = balances.map((balance) => balance.userName); // Extract usernames from balances
+      setFriends(friendUsernames);
+    }
   }, []);
 
   return (
@@ -158,10 +179,16 @@ const SidebarContent = ({ onLogout, isExpanded }) => {
           />
         </HStack>
         <HStack spacing={2}>
-          <Icon as={InfoIcon} color={textColor} />
-          <Text fontSize="sm" color={textColor}>
-            Aryan Gupta
-          </Text>
+          <VStack align="start" w="full">
+            {friends.map((friend, index) => (
+              <HStack key={index} w="full">
+                <Icon as={InfoIcon} color="teal.500" />
+                <Text fontSize="sm" color={textColor} isTruncated>
+                  {friend}
+                </Text>
+              </HStack>
+            ))}
+          </VStack>
         </HStack>
       </Box>
     </VStack>

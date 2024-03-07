@@ -18,8 +18,8 @@ import {
   ModalCloseButton,
   ModalBody,
   ModalFooter,
+  Spacer,
 } from "@chakra-ui/react";
-
 import { FaList, FaChartBar } from "react-icons/fa";
 import { formatCurrency } from "../helper/HelperFunc";
 import { collection, getDocs } from "firebase/firestore";
@@ -28,6 +28,8 @@ import { getUserName } from "../helper/HelperFunc";
 import { useEffect, useState } from "react";
 import AddExpense from "./AddExpense";
 import SettleUp from "./SettleUp";
+import { InfoIcon, AddIcon, QuestionOutlineIcon } from "@chakra-ui/icons";
+
 const DashboardContent = () => {
   const buttonSize = useBreakpointValue({ base: "sm", md: "md" });
   const avatarSize = useBreakpointValue({ base: "sm", md: "md" });
@@ -47,6 +49,10 @@ const DashboardContent = () => {
     onClose: onSettleUpClose,
   } = useDisclosure();
 
+  const onAvatarClick = (uid) => {
+    console.log("Avatar clicked", uid);
+  };
+
   // Fetch balances when the component mounts
 
   // Using local state to store the user uid
@@ -56,7 +62,6 @@ const DashboardContent = () => {
     if (storedUid) {
       setCurrentUserUid(storedUid);
     }
-
     // Set up the listener for auth state changes
     const unsubscribe = auth.onAuthStateChanged((user) => {
       const uid = user ? user.uid : null;
@@ -126,11 +131,24 @@ const DashboardContent = () => {
     .filter((balance) => balance.balance > 0)
     .map((balance) => (
       <Flex key={balance.userName} align="center" mb={2} mt={2}>
-        <Avatar name={balance.userName} size={avatarSize} mr={2} />
+      
+        <Avatar
+          name={balance.userName}
+          size={avatarSize}
+          mr={2}
+          onClick={onAvatarClick(balance.uid)}
+        />
         <Text fontSize="md">
           {balance.userName} owes you{" "}
           {formatCurrency(Math.abs(balance.balance))}
         </Text>
+        <Spacer />
+        <IconButton
+          variant="ghost"
+          icon={<QuestionOutlineIcon />}
+          aria-label="View details"
+          size="sm"
+        />
       </Flex>
     ));
 
@@ -142,6 +160,13 @@ const DashboardContent = () => {
         <Text fontSize="md">
           You owe {balance.userName} {formatCurrency(Math.abs(balance.balance))}
         </Text>
+        <Spacer />
+        <IconButton
+          variant="ghost"
+          icon={<QuestionOutlineIcon />}
+          aria-label="View details"
+          size="sm"
+        />
       </Flex>
     ));
 

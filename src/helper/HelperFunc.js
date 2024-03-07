@@ -15,7 +15,12 @@ export const emailShortner = (email) => {
 export async function getUserName(uid) {
   const userRef = doc(db, "users", uid);
   const userSnap = await getDoc(userRef);
-  return userSnap.exists()
-    ? emailShortner(userSnap.data().email)
-    : "Unknown User";
+  if (userSnap.exists()) {
+    const fullName = userSnap.data().name;
+    // Split the full name by space and return the first part (first name)
+    const firstName = fullName.split(" ")[0];
+    return firstName;
+  } else {
+    return "Unknown User";
+  }
 }

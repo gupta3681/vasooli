@@ -14,6 +14,8 @@ import { useForm } from "react-hook-form";
 import { auth } from "../auth/firebase";
 import { useNavigate } from "react-router-dom";
 import { createUserWithEmailAndPassword } from "firebase/auth";
+import { doc, setDoc } from "firebase/firestore";
+import { db } from "../auth/firebase";
 
 const SignUpPage = () => {
   const { handleSubmit, register } = useForm();
@@ -27,6 +29,13 @@ const SignUpPage = () => {
         data.email,
         data.password
       );
+      const user = userCredential.user;
+      await setDoc(doc(db, "users", user.uid), {
+        name: data.name,
+        email: data.email,
+        creditScore: 1000, // Add a default credit score
+        // Any other fields you'd like to save
+      });
       console.log(userCredential);
       navigate("/dashboard");
     } catch (error) {

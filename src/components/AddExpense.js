@@ -170,7 +170,9 @@ const AddExpense = ({ onExpenseAdded }) => {
       setAmount("");
       setEmail("");
       setDescription("");
-      
+
+      // clear local storage
+      sessionStorage.clear();
 
       // Optional callback for when an expense is successfully added
       if (onExpenseAdded) {
