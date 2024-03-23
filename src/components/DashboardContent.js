@@ -29,6 +29,7 @@ import { useEffect, useState } from "react";
 import AddExpense from "./AddExpense";
 import SettleUp from "./SettleUp";
 import { InfoIcon, AddIcon, QuestionOutlineIcon } from "@chakra-ui/icons";
+import { CreateGroup } from "./CreateGroup";
 
 const DashboardContent = () => {
   const buttonSize = useBreakpointValue({ base: "sm", md: "md" });
@@ -48,9 +49,14 @@ const DashboardContent = () => {
     onOpen: onSettleUpOpen,
     onClose: onSettleUpClose,
   } = useDisclosure();
+  const {
+    isOpen: isGroupCreateOpen,
+    onOpen: onGroupCreateOpen,
+    onClose: onGroupCreateClose,
+  } = useDisclosure();
 
   const onAvatarClick = (uid) => {
-    console.log("Avatar clicked", uid);
+    // dont know whats happening here
   };
 
   // Fetch balances when the component mounts
@@ -131,7 +137,6 @@ const DashboardContent = () => {
     .filter((balance) => balance.balance > 0)
     .map((balance) => (
       <Flex key={balance.userName} align="center" mb={2} mt={2}>
-      
         <Avatar
           name={balance.userName}
           size={avatarSize}
@@ -188,6 +193,13 @@ const DashboardContent = () => {
           </Button>
           <Button variant="outline" size={buttonSize} onClick={onSettleUpOpen}>
             Settle up
+          </Button>
+          <Button
+            variant="outline"
+            size={buttonSize}
+            onClick={onGroupCreateOpen}
+          >
+            Create group
           </Button>
         </Stack>
       </Stack>
@@ -311,6 +323,21 @@ const DashboardContent = () => {
             <SettleUp onSettlementCompleted={onSettleUpClose} />
           </ModalBody>
           <ModalFooter></ModalFooter>
+        </ModalContent>
+      </Modal>
+      <Modal isOpen={isGroupCreateOpen} onClose={onGroupCreateClose}>
+        <ModalOverlay />
+        <ModalContent>
+          <ModalHeader>Create a Group</ModalHeader>
+          <ModalCloseButton />
+          <ModalBody>
+            <CreateGroup />
+          </ModalBody>
+          <ModalFooter>
+            <Button colorScheme="teal" onClick={onGroupCreateClose}>
+              Close
+            </Button>
+          </ModalFooter>
         </ModalContent>
       </Modal>
     </Flex>
