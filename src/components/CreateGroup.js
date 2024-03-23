@@ -9,15 +9,17 @@ import {
   ListItem,
   IconButton,
   Box,
+  useToast, // Correctly import useToast
 } from "@chakra-ui/react";
 import { DeleteIcon } from "@chakra-ui/icons";
-import { collection, addDoc } from "firebase/firestore";
-import { db } from "../auth/firebase";
+import { collection, addDoc, getDocs, query, where } from "firebase/firestore";
+import { db, auth } from "../auth/firebase"; // Ensure these are correctly imported
 
 export const CreateGroup = () => {
   const [newEmail, setNewEmail] = useState("");
   const [emails, setEmails] = useState([]);
-  const [groupName, setGroupName] = useState(""); // Updated for group name
+  const [groupName, setGroupName] = useState(""); // For group name
+  const toast = useToast();
 
   const addEmail = () => {
     if (newEmail && !emails.includes(newEmail)) {
@@ -31,25 +33,62 @@ export const CreateGroup = () => {
     setEmails(emails.filter((_, i) => i !== index));
   };
 
-  // Placeholder function for saving group info
   const saveGroup = async () => {
     try {
-      // Assuming `emails` is an array of email strings
-      // You might want to resolve these emails to user IDs or document references for more robust linking
+      // Validate the current user
+      const adderUid = auth.currentUser?.uid;
+      if (!adderUid) {
+        throw new Error("Authentication required.");
+      }
 
-      // Add a new document to the groups collection
+      // Prepare to validate emails
+      const usersRef = collection(db, "users");
+      const validEmails = [];
+
+      // Check each email against registered users
+      for (const email of emails) {
+        const q = query(usersRef, where("email", "==", email));
+        const querySnapshot = await getDocs(q);
+
+        if (!querySnapshot.empty) {
+          validEmails.push(email); // Add valid emails to a new list
+        }
+      }
+      if (validEmails.length <= 1) {
+        throw new Error("Group must have at least two members.");
+      }
+
+      if (validEmails.length !== emails.length) {
+        throw new Error("One or more emails are not registered users.");
+      }
+
+      // Save the group with validated emails
       const docRef = await addDoc(collection(db, "groups"), {
         name: groupName,
-        members: emails, // Store the array of member emails
-        createdAt: new Date(), // Optional: Store the creation date of the group
+        members: validEmails,
+        createdAt: new Date(),
       });
-      console.log("Group added with ID:", docRef.id);
 
+      toast({
+        title: "Group created.",
+        description: "The group has been successfully created.",
+        status: "success",
+        duration: 5000,
+        isClosable: true,
+      });
+
+      // Clear form state
       setGroupName("");
       setEmails([]);
     } catch (e) {
-      console.error("Error adding document: ", e);
-      // Optional: Show an error message to the user
+      console.error("Error: ", e);
+      toast({
+        title: "An error occurred.",
+        description: e.message,
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+      });
     }
   };
 
@@ -103,6 +142,7 @@ export const CreateGroup = () => {
         onClick={saveGroup}
         colorScheme="teal"
         width={{ base: "full", md: "auto" }}
+        isDisabled={!groupName || emails.length < 2}
       >
         Create
       </Button>
